@@ -11,9 +11,9 @@ from Crypto.Util.Padding import unpad
 # --- AYARLAR ---
 BASE_URL = "https://cizgimax.online"
 OUTPUT_FILE = "cizgimax.m3u"
-CONCURRENT_LIMIT = 25   # HIZLANDIRILDI: Aynı anda 25 istek (Önceki 5 idi)
-MAX_PAGES = 3           # Her kategoriden kaç sayfa?
-TIMEOUT = 15            # Hızlanması için süre kısaltıldı
+CONCURRENT_LIMIT = 20   # Hız/Güvenlik Dengesi (20 ideal)
+MAX_PAGES = 3           # Her kategoriden taranacak sayfa sayısı
+TIMEOUT = 15            # İstek zaman aşımı (saniye)
 
 CATEGORIES = {
     "Son Eklenenler": f"{BASE_URL}/diziler/?orderby=date&order=DESC",
@@ -66,7 +66,7 @@ async def fetch_text(session, url, referer=None):
 
 # --- KAYNAK ÇÖZÜCÜLER ---
 async def resolve_video_url(session, iframe_src, referer_url):
-    """Verilen iframe linkini çözer (Paralel çalışmaya uygun)"""
+    """Verilen iframe linkini çözer"""
     if not iframe_src: return None
     if iframe_src.startswith("//"): iframe_src = "https:" + iframe_src
 
@@ -131,7 +131,6 @@ async def process_episode(session, semaphore, category, series_title, ep_title, 
         found_url = None
         for link in sorted_links:
             src = link.get("data-frame")
-            # İframe'i çözmeye çalış
             video_url = await resolve_video_url(session, src, ep_url)
             if video_url:
                 found_url = video_url
@@ -150,12 +149,10 @@ async def process_episode(session, semaphore, category, series_title, ep_title, 
             })
             print(f"  [+] {full_title}", flush=True)
         else:
-            # print(f"  [-] {series_title} - {ep_title} (Bulunamadı)", flush=True)
             pass
 
 async def process_series(session, semaphore, category, series_title, series_url, poster):
-    """Dizi sayfasını tarar, bölümleri bulur ve işlem kuyruğuna atar"""
-    # Dizi sayfasına girmek için de semafor kullan (aşırı yüklenmeyi önle)
+    """Dizi sayfasını tarar"""
     async with semaphore:
         html = await fetch_text(session, series_url)
     
@@ -172,13 +169,11 @@ async def process_series(session, semaphore, category, series_title, series_url,
         name_s = div.select_one("span.episode-names")
         link_a = div.select_one("a")
         if name_s and link_a:
-            # Bölümleri Paralel Başlat (process_episode kendi içinde semafor kullanıyor)
             tasks.append(process_episode(
                 session, semaphore, category, series_title, 
                 name_s.text.strip(), link_a['href'], poster
             ))
             
-    # Dizi içindeki tüm bölümleri bekle
     await asyncio.gather(*tasks)
 
 async def scan_category(session, semaphore, cat_name, cat_url):
@@ -200,7 +195,6 @@ async def scan_category(session, semaphore, cat_name, cat_url):
                 if base.endswith("/"): base = base[:-1]
                 url = f"{base}/page/{page}{query}"
         
-        # Sayfayı çek (Semafor kullanmaya gerek yok, az istek var)
         html = await fetch_text(session, url)
         if not html: break
         
@@ -216,25 +210,21 @@ async def scan_category(session, semaphore, cat_name, cat_url):
             
             if t_tag and l_tag:
                 poster = i_tag.get("data-src") if i_tag else ""
-                # Diziyi işleme kuyruğuna ekle
                 series_tasks.append(process_series(
                     session, semaphore, cat_name, 
                     t_tag.text.strip(), l_tag['href'], poster
                 ))
     
-    # Tüm dizileri paralel işle
     await asyncio.gather(*series_tasks)
 
 async def main():
     print("Turbo CizgiMax Bot Başlatılıyor...", flush=True)
     start_time = time.time()
     
-    # Semafor: Aynı anda en fazla X aktif indirme/bağlantı
     semaphore = asyncio.Semaphore(CONCURRENT_LIMIT)
     
     async with AsyncSession() as session:
         cat_tasks = []
-        # Tüm kategorileri AYNI ANDA başlat
         for c_name, c_url in CATEGORIES.items():
             cat_tasks.append(scan_category(session, semaphore, c_name, c_url))
         
@@ -247,4 +237,15 @@ async def main():
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         f.write("#EXTM3U\n")
         for item in FINAL_PLAYLIST:
-            f.write(f'#EXTINF:-1 group-title="{item["group"]}" tvg-logo="{item["logo"]}", {item
+            # HATANIN DÜZELTİLDİĞİ SATIR:
+            f.write(f'#EXTINF:-1 group-title="{item["group"]}" tvg-logo="{item["logo"]}", {item["title"]}\n')
+            f.write(f'{item["url"]}\n')
+
+    print(f"Bitti! Süre: {time.time() - start_time:.2f}sn")
+
+if __name__ == "__main__":
+    if sys.platform == 'win32':
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt: pass
