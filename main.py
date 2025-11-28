@@ -3,21 +3,16 @@ from curl_cffi.requests import AsyncSession
 from bs4 import BeautifulSoup
 import re
 import time
-import base64
-import sys
 import random
-import json
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import unpad
+import sys
 
 # --- AYARLAR ---
 BASE_URL = "https://cizgimax.online"
 OUTPUT_FILE = "cizgimax.m3u"
-CONCURRENT_LIMIT = 15   # Cloudflare'i tetiklememek için makul hız
+CONCURRENT_LIMIT = 20   # Hız/Engel Dengesi için 20 idealdir
 MAX_PAGES = 3           # Tarama derinliği
-TIMEOUT = 30            # Zaman aşımı
+TIMEOUT = 10            # 10 saniyede açılmayan linki atla (Hız için kritik)
 
-# Kotlin kodundaki kategoriler
 CATEGORIES = {
     "Son Eklenenler": f"{BASE_URL}/diziler/?orderby=date&order=DESC",
     "Aile": f"{BASE_URL}/diziler/?s_type&tur[0]=aile&orderby=date&order=DESC",
@@ -30,128 +25,69 @@ CATEGORIES = {
 
 FINAL_PLAYLIST = []
 
-# --- KOTLIN AES PORTU (CizgiDuo) ---
-def decrypt_aes(encrypted, password):
-    """
-    Kotlin: AesHelper.cryptoAESHandler(data, pass, false)
-    Logic: AES/CBC/PKCS5Padding, Key=Password(32byte), IV=Key(16byte)
-    """
-    try:
-        key = password.encode('utf-8')
-        # Key padding to 32 bytes
-        if len(key) > 32: key = key[:32]
-        elif len(key) < 32: key = key.ljust(32, b'\0')
-        
-        iv = key[:16]
-        
-        encrypted_bytes = base64.b64decode(encrypted)
-        cipher = AES.new(key, AES.MODE_CBC, iv=iv)
-        
-        try:
-            decrypted = unpad(cipher.decrypt(encrypted_bytes), AES.block_size)
-        except ValueError:
-            # Padding hatası olursa ham veriyi al ve temizle
-            decrypted = cipher.decrypt(encrypted_bytes)
-            
-        return decrypted.decode('utf-8', errors='ignore').strip().replace('\x00', '')
-    except Exception as e:
-        return None
-
-# --- AĞ İSTEKLERİ (Cloudflare Bypass) ---
+# --- AĞ İSTEKLERİ ---
 async def fetch_text(session, url, referer=None):
-    # Gerçek bir Android/Chrome gibi görünelim
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        "Referer": referer if referer else BASE_URL,
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-        "Accept-Language": "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7",
-        "Sec-Ch-Ua": '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
-        "Sec-Ch-Ua-Mobile": "?0",
-        "Sec-Ch-Ua-Platform": '"Windows"',
-        "Sec-Fetch-Dest": "document",
-        "Sec-Fetch-Mode": "navigate",
-        "Sec-Fetch-Site": "same-origin",
-        "Upgrade-Insecure-Requests": "1"
-    }
+    headers = {"Referer": referer} if referer else {}
+    # Farklı tarayıcı kimlikleri (User-Agent Rotasyonu)
+    browsers = ["chrome110", "chrome120", "edge101", "safari15_3"]
     
     try:
-        # Impersonate 'chrome120' Cloudflare'i geçmek için en iyi yöntemlerden biri
-        response = await session.get(url, headers=headers, timeout=TIMEOUT, impersonate="chrome120")
-        
-        # DEBUG İÇİN ÖNEMLİ:
-        if response.status_code == 403:
-            # print(f"BLOKLANDI (403): {url}")
-            return None
-        
-        # Cloudflare "Just a moment" sayfası mı geldi?
-        if "<title>Just a moment...</title>" in response.text:
-            print(f"CLOUDFLARE YAKALADI: {url}")
-            return None
-            
+        # Donmayı önlemek için asyncio.wait_for kullanmıyoruz, curl_cffi'nin kendi timeout'unu kullanıyoruz
+        response = await session.get(
+            url, 
+            headers=headers, 
+            timeout=TIMEOUT, 
+            impersonate=random.choice(browsers)
+        )
         if response.status_code == 200:
             return response.text
-            
-    except Exception as e:
+    except:
         pass
-        
     return None
 
-# --- KAYNAK ÇÖZÜCÜLER ---
-async def resolve_video_source(session, iframe_src, referer_url):
+# --- EVRENSEL VİDEO BULUCU ---
+async def find_video_link(session, iframe_url, referer_url):
     """
-    Kotlin kodundaki mantığa göre kaynakları çözer.
+    Bu fonksiyon şifre çözmekle uğraşmaz.
+    Sayfanın kaynağına bakar ve .m3u8 veya .mp4 linki arar.
     """
-    if not iframe_src: return None
-    if iframe_src.startswith("//"): iframe_src = "https:" + iframe_src
+    if not iframe_url: return None
+    if iframe_url.startswith("//"): iframe_url = "https:" + iframe_url
 
-    # 1. CizgiDuo / CizgiPass (Kotlin: CizgiDuo.kt)
-    if "cizgiduo" in iframe_src or "cizgipass" in iframe_src:
-        html = await fetch_text(session, iframe_src, referer=referer_url)
-        if html:
-            # Regex: bePlayer('pass', '{data}')
-            match = re.search(r"bePlayer\('([^']+)',\s*'(\{[^}]+\})'\)", html)
-            if match:
-                password = match.group(1)
-                json_raw = match.group(2)
-                # JSON içindeki "data" alanını bul
-                data_match = re.search(r'"data"\s*:\s*"([^"]+)"', json_raw)
-                if data_match:
-                    decrypted = decrypt_aes(data_match.group(1), password)
-                    if decrypted:
-                        # video_location":"url"
-                        m3u = re.search(r'video_location":"([^"]+)"', decrypted)
-                        if m3u: return m3u.group(1).replace("\\", "")
-
-    # 2. Sibnet (Kotlin: SibNet.kt)
-    elif "sibnet.ru" in iframe_src:
-        # Link temizliği
-        clean_url = iframe_src.split("|")[0]
+    # 1. Sibnet Özel Durumu (Link Düzeltme)
+    if "sibnet.ru" in iframe_url:
+        vid_id = None
+        if "videoid=" in iframe_url:
+            vid_id = re.search(r'videoid=(\d+)', iframe_url)
+        elif "/video/" in iframe_url:
+            vid_id = re.search(r'/video/(\d+)', iframe_url)
         
-        # ID çıkarma
-        video_id = None
-        if "videoid=" in clean_url:
-            video_id = re.search(r'videoid=(\d+)', clean_url).group(1)
-        elif "/video/" in clean_url:
-            video_id = re.search(r'/video/(\d+)', clean_url).group(1)
-            
-        if video_id:
-            # Sibnet shell yerine video sayfasına gidiyoruz (Bot korumasını aşmak için)
-            real_url = f"https://video.sibnet.ru/video/{video_id}"
+        if vid_id:
+            # Shell.php yerine video sayfasına git
+            real_url = f"https://video.sibnet.ru/video/{vid_id.group(1)}"
             html = await fetch_text(session, real_url, referer=referer_url)
             if html:
                 slug = re.search(r'player\.src\(\[\{src:\s*"([^"]+)"', html)
                 if slug:
                     path = slug.group(1)
                     return f"https://video.sibnet.ru{path}" if path.startswith("/") else path
+        return None
 
-    # 3. Genel Yedek (M3U8/MP4 bulursa alır)
-    else:
-        html = await fetch_text(session, iframe_src, referer=referer_url)
-        if html:
-            m3u = re.search(r'(https?://[^"\'\s]+\.m3u8)', html)
-            if m3u: return m3u.group(1)
-            mp4 = re.search(r'(https?://[^"\'\s]+\.mp4)', html)
-            if mp4: return mp4.group(1)
+    # 2. Diğer Tüm Kaynaklar (CizgiDuo, Google, Vidmoly vs.)
+    html = await fetch_text(session, iframe_url, referer=referer_url)
+    if not html: return None
+
+    # M3U8 Regex (En kapsamlı)
+    # Şifreli bile olsa genelde m3u8 linki açıkta veya decode edilmiş json içinde durur.
+    m3u8_matches = re.findall(r'(https?://[^"\'\s<>\[\]]+\.m3u8)', html)
+    for m in m3u8_matches:
+        # Google m3u8'leri genelde çalışmaz, onları eleyebiliriz veya tutabiliriz.
+        return m.replace("\\", "") # JSON içindeyse escape karakterlerini sil
+
+    # MP4 Regex
+    mp4_matches = re.findall(r'(https?://[^"\'\s<>\[\]]+\.mp4)', html)
+    for m in mp4_matches:
+        return m.replace("\\", "")
 
     return None
 
@@ -162,25 +98,26 @@ async def process_episode(session, semaphore, category, series_title, ep_title, 
         if not html: return
 
         soup = BeautifulSoup(html, 'html.parser')
-        # Kotlin: document.select("ul.linkler li")
         links = soup.select("ul.linkler li a")
         
-        # Linkleri sırala: Sibnet > Cizgi > Diğer
-        sorted_links = sorted(links, key=lambda x: (
-            2 if "sibnet" in str(x.get("data-frame")) else
-            1 if "cizgi" in str(x.get("data-frame")) else 0
-        ), reverse=True)
+        # Linkleri topla
+        iframe_list = []
+        for l in links:
+            src = l.get("data-frame")
+            if src: iframe_list.append(src)
+        
+        # Sibnet'i öne al (Daha hızlı ve güvenilirdir)
+        iframe_list.sort(key=lambda x: 0 if "sibnet" in x else 1)
 
         found_url = None
-        for link in sorted_links:
-            src = link.get("data-frame")
-            found_url = await resolve_video_source(session, src, ep_url)
-            if found_url: break
+        # Tüm alternatifleri dene
+        for src in iframe_list:
+            found_url = await find_video_link(session, src, ep_url)
+            if found_url: break # Bulduysan çık
         
         if found_url:
-            # İsim Temizliği: "Gumball - 1. Bölüm" formatı
             clean_ep = ep_title.replace(series_title, "").strip()
-            # Başta "-" veya ":" varsa temizle
+            # Başta tire veya boşluk varsa sil
             clean_ep = re.sub(r'^[-:\s]+', '', clean_ep)
             if not clean_ep: clean_ep = ep_title
             
@@ -193,19 +130,20 @@ async def process_episode(session, semaphore, category, series_title, ep_title, 
                 "url": found_url
             })
             print(f"  [+] {full_title}", flush=True)
+        else:
+            # Bulunamadıysa log basma (konsolu kirletme)
+            pass
 
-# --- DİZİ İŞLEME ---
 async def process_series(session, semaphore, category, series_title, series_url, poster):
     html = await fetch_text(session, series_url)
     if not html: return
 
     soup = BeautifulSoup(html, 'html.parser')
-    # Kotlin: document.select("div.asisotope div.ajax_post")
     ep_divs = soup.select("div.asisotope div.ajax_post")
     
     if ep_divs:
         print(f" > {series_title} ({len(ep_divs)} Bölüm)", flush=True)
-        
+    
     tasks = []
     for div in ep_divs:
         name_s = div.select_one("span.episode-names")
@@ -216,46 +154,29 @@ async def process_series(session, semaphore, category, series_title, series_url,
                 session, semaphore, category, series_title, 
                 name_s.text.strip(), link_a['href'], poster
             ))
-            
-    # Dizi içindeki bölümleri paralel işle
+    
     if tasks:
+        # Bölümleri paralel işle
         await asyncio.gather(*tasks)
 
-# --- KATEGORİ TARAMA ---
 async def scan_category(session, semaphore, cat_name, cat_url):
     print(f"--- {cat_name} Taranıyor ---", flush=True)
     
     series_tasks = []
     
     for page in range(1, MAX_PAGES + 1):
-        # Sayfalama URL mantığı
         if page == 1: url = cat_url
         else:
-            if "/?p=" in cat_url:
-                parts = cat_url.split("/?p=")
-                url = f"{parts[0]}/page/{page}/?p={parts[1]}"
-            else:
-                parts = cat_url.split("/?")
-                base = parts[0]
-                query = "/?" + parts[1] if len(parts) > 1 else ""
-                if base.endswith("/"): base = base[:-1]
-                url = f"{base}/page/{page}{query}"
+            if "/?p=" in cat_url: parts = cat_url.split("/?p="); url = f"{parts[0]}/page/{page}/?p={parts[1]}"
+            else: parts = cat_url.split("/?"); url = f"{parts[0]}/page/{page}{'/?'+parts[1] if len(parts)>1 else ''}"
         
         print(f" >> Sayfa {page}...", flush=True)
         html = await fetch_text(session, url)
-        
-        if not html:
-            # DEBUG: Sayfa boş geldiyse neden?
-            print(f"!!! Sayfa {page} açılamadı (Cloudflare/403/Boş).")
-            break
+        if not html: break
         
         soup = BeautifulSoup(html, 'html.parser')
-        # Kotlin: document.select("ul.filter-results li")
         items = soup.select("ul.filter-results li")
-        
-        if not items:
-            print("   -> Bu sayfada içerik bulunamadı (Selector eşleşmedi).")
-            break
+        if not items: break
         
         for item in items:
             t = item.select_one("h2.truncate")
@@ -264,24 +185,24 @@ async def scan_category(session, semaphore, cat_name, cat_url):
             
             if t and l:
                 poster = i.get("data-src") if i else ""
+                # Diziyi kuyruğa ekle
                 series_tasks.append(process_series(
                     session, semaphore, cat_name, 
                     t.text.strip(), l['href'], poster
                 ))
     
-    # Tüm dizileri bekle
+    # Sayfadaki tüm dizileri paralel başlat
     if series_tasks:
         await asyncio.gather(*series_tasks)
 
 async def main():
-    print("CizgiMax Final Bot v5 Başlatılıyor...", flush=True)
+    print("CizgiMax Universal Bot Başlatılıyor...", flush=True)
     start_time = time.time()
     
-    # Eşzamanlılık Limiti (15 güvenlidir)
+    # 20 Eşzamanlı İşlem (Donmayı engeller, siteyi yormaz)
     semaphore = asyncio.Semaphore(CONCURRENT_LIMIT)
     
-    # Tek bir Session oluşturuyoruz (Cookies ve Headers korunur)
-    async with AsyncSession(impersonate="chrome120") as session:
+    async with AsyncSession() as session:
         cat_tasks = []
         for c, u in CATEGORIES.items():
             cat_tasks.append(scan_category(session, semaphore, c, u))
@@ -290,7 +211,6 @@ async def main():
     
     print(f"\nToplam {len(FINAL_PLAYLIST)} içerik bulundu. M3U yazılıyor...", flush=True)
     
-    # Gruplama ve Sıralama
     FINAL_PLAYLIST.sort(key=lambda x: (x["group"], x["title"]))
     
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
