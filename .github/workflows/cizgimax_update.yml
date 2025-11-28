@@ -1,36 +1,42 @@
-name: CizgiMax Güncelleyici
+name: CizgiMax Selenium Bot
 
 on:
   schedule:
-    # Her gün saat 15:00 UTC (Türkiye 18:00)
-    - cron: '0 15 * * *'
+    - cron: '0 18 * * *'
   workflow_dispatch:
 
 jobs:
-  update:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-      - name: Repoyu Çek
+      - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Python Kur
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      - name: Kütüphaneleri Yükle
-        run: pip install -r requirements.txt
-
-      - name: Botu Çalıştır
-        run: python main.py
-
-      - name: Kaydet ve Gönder
+      # Chrome ve Sürücüleri Kurulumu (SeleniumBase bunu sever)
+      - name: Install Chrome & Drivers
         run: |
-          git config --global user.name "CizgiMax Bot"
-          git config --global user.email "bot@cizgimax"
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable xvfb
+          pip install -r requirements.txt
+          sbase install chromedriver
+
+      # Kodun Çalıştırılması (XVFB ile Sanal Ekran Açılır)
+      - name: Run Scraper (with XVFB)
+        run: |
+          xvfb-run python main.py
+
+      - name: Commit & Push
+        run: |
+          git config --global user.name "Selenium Bot"
+          git config --global user.email "bot@github.com"
           git add cizgimax.m3u
-          git commit -m "Playlist Güncellendi" || exit 0
+          git commit -m "Playlist Updated via Selenium" || exit 0
           git push
