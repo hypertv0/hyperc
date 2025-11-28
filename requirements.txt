@@ -1,4 +1,2 @@
-cloudscraper
-beautifulsoup4
-pycryptodome
 requests
+beautifulsoup4
