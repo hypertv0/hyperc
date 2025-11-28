@@ -5,15 +5,16 @@ import re
 import time
 import base64
 import sys
+import random
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 
 # --- AYARLAR ---
 BASE_URL = "https://cizgimax.online"
 OUTPUT_FILE = "cizgimax.m3u"
-CONCURRENT_LIMIT = 10   # Hızlandırıldı: Aynı anda 10 işlem
-MAX_PAGES = 2           # Her kategoriden kaç sayfa taranacak?
-TIMEOUT = 15            # 15 saniye cevap vermezse atla (Donmayı engeller)
+CONCURRENT_LIMIT = 5    # Hızlandırıldı
+MAX_PAGES = 3           # Tarama derinliği
+TIMEOUT = 20            # Zaman aşımı
 
 # Kategoriler
 CATEGORIES = {
@@ -28,125 +29,115 @@ CATEGORIES = {
 
 FINAL_PLAYLIST = []
 
-# --- ŞİFRE ÇÖZME FONKSİYONLARI ---
-def decrypt_cizgiduo(encrypted_data, password):
-    """CizgiDuo AES Şifresini Çözer"""
+# --- YARDIMCI FONKSİYONLAR ---
+def decrypt_aes(encrypted, password):
     try:
         key = password.encode('utf-8')
-        # Key 32 byte olmalı
         if len(key) > 32: key = key[:32]
         elif len(key) < 32: key = key.ljust(32, b'\0')
-
-        encrypted_bytes = base64.b64decode(encrypted_data)
-        # IV genelde Key ile aynıdır bu tür playerlarda
+        encrypted_bytes = base64.b64decode(encrypted)
         cipher = AES.new(key, AES.MODE_CBC, iv=key[:16])
-        try:
-            decrypted = unpad(cipher.decrypt(encrypted_bytes), AES.block_size)
-        except:
-            # Padding hatası olursa raw decode dene
-            decrypted = cipher.decrypt(encrypted_bytes)
-            
-        return decrypted.decode('utf-8', errors='ignore')
-    except Exception as e:
+        return unpad(cipher.decrypt(encrypted_bytes), AES.block_size).decode('utf-8', 'ignore')
+    except:
         return None
 
-# --- AĞ İSTEKLERİ ---
 async def fetch_text(session, url, referer=None):
-    """Url içeriğini çeker (Zaman aşımlı)"""
+    # Rastgele Browser İmzası (Engeli aşmak için)
+    impersonations = ["chrome110", "chrome120", "edge101", "safari15_3"]
     headers = {"Referer": referer} if referer else {}
+    
     try:
-        # impersonate="chrome110" Cloudflare'i kandırır
-        response = await session.get(url, headers=headers, timeout=TIMEOUT, impersonate="chrome110")
+        response = await session.get(
+            url, 
+            headers=headers, 
+            timeout=TIMEOUT, 
+            impersonate=random.choice(impersonations)
+        )
         if response.status_code == 200:
             return response.text
-    except Exception:
+    except:
         pass
     return None
 
-async def resolve_video(session, iframe_url, referer_url):
-    """Video linkini (M3U8) çözer"""
+# --- VİDEO ÇÖZÜCÜ (AGRESİF) ---
+async def resolve_any_video(session, iframe_url, referer_url):
+    """
+    Verilen iframe linki içindeki video dosyasını bulmaya çalışır.
+    Oyuncu ayrımı yapmaz, ne bulursa alır.
+    """
     if not iframe_url: return None
     if iframe_url.startswith("//"): iframe_url = "https:" + iframe_url
 
-    # 1. CizgiDuo (AES Şifreli)
+    # 1. Kaynak Kodunu Çek
+    html = await fetch_text(session, iframe_url, referer=referer_url)
+    if not html: return None
+
+    # 2. CizgiDuo/Pass Özel Şifre Çözme
     if "cizgiduo" in iframe_url or "cizgipass" in iframe_url:
-        try:
-            html = await fetch_text(session, iframe_url, referer=referer_url)
-            if not html: return None
-            
-            # bePlayer('password', '{data}')
-            match = re.search(r"bePlayer\('([^']+)',\s*'(\{[^}]+\})'\)", html)
-            if match:
-                password = match.group(1)
-                json_raw = match.group(2)
-                
-                # json içinden "data":"..." kısmını al
-                data_match = re.search(r'"data"\s*:\s*"([^"]+)"', json_raw)
-                if data_match:
-                    enc_text = data_match.group(1)
-                    decrypted = decrypt_cizgiduo(enc_text, password)
-                    if decrypted:
-                        # video_location":"url"
-                        m3u = re.search(r'video_location":"([^"]+)"', decrypted)
-                        if m3u:
-                            return m3u.group(1).replace("\\", "")
-        except:
-            pass
+        match = re.search(r"bePlayer\('([^']+)',\s*'(\{[^}]+\})'\)", html)
+        if match:
+            pwd = match.group(1)
+            json_str = match.group(2)
+            data_match = re.search(r'"data"\s*:\s*"([^"]+)"', json_str)
+            if data_match:
+                decrypted = decrypt_aes(data_match.group(1), pwd)
+                if decrypted:
+                    m3u = re.search(r'video_location":"([^"]+)"', decrypted)
+                    if m3u: return m3u.group(1).replace("\\", "")
 
-    # 2. Sibnet
-    elif "sibnet.ru" in iframe_url:
-        try:
-            # ID Çıkarma
-            vid_id = None
-            if "videoid=" in iframe_url:
-                vid_id = re.search(r'videoid=(\d+)', iframe_url).group(1)
-            elif "/video/" in iframe_url:
-                vid_id = re.search(r'/video/(\d+)', iframe_url).group(1)
-            
-            if vid_id:
-                real_url = f"https://video.sibnet.ru/video/{vid_id}"
-                html = await fetch_text(session, real_url, referer=referer_url)
-                if html:
-                    slug = re.search(r'player\.src\(\[\{src:\s*"([^"]+)"', html)
-                    if slug:
-                        path = slug.group(1)
-                        return f"https://video.sibnet.ru{path}" if path.startswith("/") else path
-        except:
-            pass
+    # 3. Sibnet Özel Çözme
+    if "sibnet.ru" in iframe_url:
+        slug_match = re.search(r'player\.src\(\[\{src:\s*"([^"]+)"', html)
+        if slug_match:
+            slug = slug_match.group(1)
+            return f"https://video.sibnet.ru{slug}" if slug.startswith("/") else slug
 
-    # 3. Genel M3U8/MP4 Tarama
-    try:
-        html = await fetch_text(session, iframe_url, referer=referer_url)
-        if html:
-            m3u8 = re.search(r'(https?://[^"\']+\.m3u8)', html)
-            if m3u8: return m3u8.group(1)
-            mp4 = re.search(r'(https?://[^"\']+\.mp4)', html)
-            if mp4: return mp4.group(1)
-    except:
-        pass
+    # 4. GENEL TARAMA (En Önemlisi)
+    # Sayfadaki herhangi bir .m3u8 veya .mp4 linkini yakala
+    # Google Drive, Vidmoly, Fembed vb. ne varsa.
+    
+    # M3U8 Regex
+    m3u8_matches = re.findall(r'(https?://[^"\'\s]+\.m3u8)', html)
+    for m in m3u8_matches:
+        if "google" not in m: # Google m3u8'leri genelde çalışmaz
+            return m
+
+    # MP4 Regex
+    mp4_matches = re.findall(r'(https?://[^"\'\s]+\.mp4)', html)
+    for m in mp4_matches:
+        return m
 
     return None
 
 async def process_episode(session, category, series_title, ep_title, ep_url, poster):
+    # Bölüm sayfasına git
     html = await fetch_text(session, ep_url, referer=BASE_URL)
     if not html: return
 
     soup = BeautifulSoup(html, 'html.parser')
+    
+    # Sayfadaki TÜM Alternatif Kaynakları Bul
+    # Genelde: ul.linkler li a
     links = soup.select("ul.linkler li a")
     
-    # Kaynakları önceliklendir (CizgiDuo en iyi kalitedir)
-    sorted_links = sorted(links, key=lambda x: (
-        2 if "cizgiduo" in str(x.get("data-frame")) else
-        1 if "sibnet" in str(x.get("data-frame")) else 0
-    ), reverse=True)
-
     found_url = None
-    for link in sorted_links:
-        iframe = link.get("data-frame")
-        video_url = await resolve_video(session, iframe, ep_url)
+    
+    # Linkleri Karıştır (Hep aynı sırayla deneyip ban yememek için)
+    # Ama Sibnet varsa ona öncelik ver çünkü o daha az patlıyor.
+    link_data_list = []
+    for l in links:
+        d_frame = l.get("data-frame")
+        if d_frame: link_data_list.append(d_frame)
+    
+    # Sibnet'i başa al
+    link_data_list.sort(key=lambda x: "sibnet" not in x)
+
+    # Sırayla tüm alternatifleri dene
+    for iframe_src in link_data_list:
+        video_url = await resolve_any_video(session, iframe_src, ep_url)
         if video_url:
             found_url = video_url
-            break
+            break # Bulduk! Çık.
     
     if found_url:
         clean_ep = ep_title.replace(series_title, "").strip()
@@ -159,9 +150,11 @@ async def process_episode(session, category, series_title, ep_title, ep_url, pos
             "logo": poster,
             "url": found_url
         })
-        print(f"  [+] Eklendi: {full_title}", flush=True)
+        print(f"  [+] Eklendi: {full_title} (Kaynak bulundu)", flush=True)
     else:
-        print(f"  [-] Bulunamadı: {series_title} - {ep_title}", flush=True)
+        # Eğer hiçbiri çalışmazsa, boşuna log basıp kirletme
+        # Veya debug için basabilirsin
+        print(f"  [-] Kaynak Yok: {series_title} - {ep_title}", flush=True)
 
 async def process_series(session, semaphore, category, series_title, series_url, poster):
     async with semaphore:
@@ -169,6 +162,7 @@ async def process_series(session, semaphore, category, series_title, series_url,
         if not html: return
 
         soup = BeautifulSoup(html, 'html.parser')
+        # Bölümleri çek
         ep_divs = soup.select("div.asisotope div.ajax_post")
         
         tasks = []
@@ -176,16 +170,21 @@ async def process_series(session, semaphore, category, series_title, series_url,
             name_s = div.select_one("span.episode-names")
             link_a = div.select_one("a")
             if name_s and link_a:
-                tasks.append(process_episode(session, category, series_title, name_s.text.strip(), link_a['href'], poster))
+                tasks.append(process_episode(
+                    session, category, series_title, 
+                    name_s.text.strip(), link_a['href'], poster
+                ))
         
         if tasks:
-            print(f" > Dizi: {series_title} ({len(tasks)} Bölüm)", flush=True)
-            await asyncio.gather(*tasks)
+            print(f" > Dizi Taranıyor: {series_title} ({len(tasks)} Bölüm)", flush=True)
+            # 20'li paketler halinde işle (Hızlandırıldı)
+            chunk_size = 20
+            for i in range(0, len(tasks), chunk_size):
+                await asyncio.gather(*tasks[i:i+chunk_size])
 
 async def scan_category(session, semaphore, cat_name, cat_url):
     print(f"\n--- Kategori: {cat_name} ---", flush=True)
     for page in range(1, MAX_PAGES + 1):
-        # URL Oluşturma
         if page == 1: url = cat_url
         else:
             if "/?p=" in cat_url:
@@ -198,7 +197,7 @@ async def scan_category(session, semaphore, cat_name, cat_url):
                 if base.endswith("/"): base = base[:-1]
                 url = f"{base}/page/{page}{query}"
         
-        print(f" >> Sayfa {page} taranıyor...", flush=True)
+        print(f" >> Sayfa {page}...", flush=True)
         html = await fetch_text(session, url)
         if not html: break
         
@@ -214,21 +213,22 @@ async def scan_category(session, semaphore, cat_name, cat_url):
             
             if t_tag and l_tag:
                 poster = i_tag.get("data-src") if i_tag else ""
-                tasks.append(process_series(session, semaphore, cat_name, t_tag.text.strip(), l_tag['href'], poster))
+                tasks.append(process_series(
+                    session, semaphore, cat_name, 
+                    t_tag.text.strip(), l_tag['href'], poster
+                ))
         
         await asyncio.gather(*tasks)
 
 async def main():
-    print("Bot Başlatılıyor...", flush=True)
+    print("CizgiMax Final Bot v3...", flush=True)
     semaphore = asyncio.Semaphore(CONCURRENT_LIMIT)
     
     async with AsyncSession() as session:
-        tasks = []
         for c_name, c_url in CATEGORIES.items():
-            tasks.append(scan_category(session, semaphore, c_name, c_url))
-        await asyncio.gather(*tasks)
+            await scan_category(session, semaphore, c_name, c_url)
     
-    print(f"\nToplam {len(FINAL_PLAYLIST)} içerik bulundu. Kaydediliyor...", flush=True)
+    print(f"\nToplam {len(FINAL_PLAYLIST)} içerik bulundu. M3U yazılıyor...", flush=True)
     FINAL_PLAYLIST.sort(key=lambda x: (x["group"], x["title"]))
     
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
@@ -242,5 +242,4 @@ if __name__ == "__main__":
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     try:
         asyncio.run(main())
-    except KeyboardInterrupt:
-        print("Durduruldu.")
+    except KeyboardInterrupt: pass
