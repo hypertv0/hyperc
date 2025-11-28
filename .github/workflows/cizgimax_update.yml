@@ -1,0 +1,36 @@
+name: CizgiMax Güncelleyici
+
+on:
+  schedule:
+    # Her gün saat 15:00 UTC (Türkiye 18:00)
+    - cron: '0 15 * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Repoyu Çek
+        uses: actions/checkout@v3
+
+      - name: Python Kur
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Kütüphaneleri Yükle
+        run: pip install -r requirements.txt
+
+      - name: Botu Çalıştır
+        run: python main.py
+
+      - name: Kaydet ve Gönder
+        run: |
+          git config --global user.name "CizgiMax Bot"
+          git config --global user.email "bot@cizgimax"
+          git add cizgimax.m3u
+          git commit -m "Playlist Güncellendi" || exit 0
+          git push
