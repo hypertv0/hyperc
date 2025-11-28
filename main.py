@@ -11,9 +11,9 @@ from Crypto.Util.Padding import unpad
 # --- AYARLAR ---
 BASE_URL = "https://cizgimax.online"
 OUTPUT_FILE = "cizgimax.m3u"
-CONCURRENT_LIMIT = 20   # Hız/Güvenlik Dengesi (20 ideal)
-MAX_PAGES = 3           # Her kategoriden taranacak sayfa sayısı
-TIMEOUT = 15            # İstek zaman aşımı (saniye)
+CONCURRENT_LIMIT = 20   # Aynı anda 20 bağlantı (İdeal)
+MAX_PAGES = 3           # Tarama derinliği
+TIMEOUT = 20            # İstek zaman aşımı
 
 CATEGORIES = {
     "Son Eklenenler": f"{BASE_URL}/diziler/?orderby=date&order=DESC",
@@ -26,6 +26,7 @@ CATEGORIES = {
 }
 
 FINAL_PLAYLIST = []
+PROCESSED_COUNT = 0
 
 # --- ŞİFRE ÇÖZME ---
 def decrypt_aes_cizgiduo(encrypted_data, password):
@@ -47,32 +48,36 @@ def decrypt_aes_cizgiduo(encrypted_data, password):
     except:
         return None
 
-# --- AĞ İSTEKLERİ ---
-async def fetch_text(session, url, referer=None):
+# --- AĞ İSTEKLERİ (Kilitlenme Önleyici) ---
+async def fetch_text(session, semaphore, url, referer=None):
+    """
+    Semafor sadece istek anında kullanılır ve hemen bırakılır.
+    Bu sayede 'Deadlock' oluşmaz.
+    """
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Referer": referer if referer else BASE_URL
     }
-    try:
-        # impersonate="chrome110" Cloudflare'i geçmek için en hızlısı
-        response = await session.get(url, headers=headers, timeout=TIMEOUT, impersonate="chrome110")
-        if response.status_code == 200:
-            return response.text
-        elif response.status_code == 403:
-            return "403"
-    except:
-        pass
+    
+    async with semaphore: # KİLİT SADECE BURADA
+        try:
+            response = await session.get(url, headers=headers, timeout=TIMEOUT, impersonate="chrome110")
+            if response.status_code == 200:
+                return response.text
+            elif response.status_code == 403:
+                return "403"
+        except:
+            pass
     return None
 
 # --- KAYNAK ÇÖZÜCÜLER ---
-async def resolve_video_url(session, iframe_src, referer_url):
-    """Verilen iframe linkini çözer"""
+async def resolve_video_url(session, semaphore, iframe_src, referer_url):
     if not iframe_src: return None
     if iframe_src.startswith("//"): iframe_src = "https:" + iframe_src
 
     # 1. CizgiDuo/Pass
     if "cizgiduo" in iframe_src or "cizgipass" in iframe_src:
-        html = await fetch_text(session, iframe_src, referer=referer_url)
+        html = await fetch_text(session, semaphore, iframe_src, referer=referer_url)
         if html and html != "403":
             match = re.search(r"bePlayer\('([^']+)',\s*'(\{[^}]+\})'\)", html)
             if match:
@@ -94,7 +99,7 @@ async def resolve_video_url(session, iframe_src, referer_url):
         
         if vid_id:
             real_url = f"https://video.sibnet.ru/video/{vid_id.group(1)}"
-            html = await fetch_text(session, real_url, referer=referer_url)
+            html = await fetch_text(session, semaphore, real_url, referer=referer_url)
             if html:
                 slug = re.search(r'player\.src\(\[\{src:\s*"([^"]+)"', html)
                 if slug:
@@ -103,7 +108,7 @@ async def resolve_video_url(session, iframe_src, referer_url):
 
     # 3. Genel
     else:
-        html = await fetch_text(session, iframe_src, referer=referer_url)
+        html = await fetch_text(session, semaphore, iframe_src, referer=referer_url)
         if html and html != "403":
             m3u = re.search(r'(https?://[^"\'\s]+\.m3u8)', html)
             if m3u: return m3u.group(1)
@@ -114,55 +119,53 @@ async def resolve_video_url(session, iframe_src, referer_url):
 
 # --- İŞLEMCİLER ---
 async def process_episode(session, semaphore, category, series_title, ep_title, ep_url, poster):
-    """Tek bir bölümü işler"""
-    async with semaphore:
-        html = await fetch_text(session, ep_url, referer=BASE_URL)
-        if not html: return
+    global PROCESSED_COUNT
+    
+    html = await fetch_text(session, semaphore, ep_url, referer=BASE_URL)
+    if not html: return
 
-        soup = BeautifulSoup(html, 'html.parser')
-        links = soup.select("ul.linkler li a")
-        
-        # Linkleri sırala (Cizgi -> Sibnet -> Diğer)
-        sorted_links = sorted(links, key=lambda x: (
-            2 if "cizgi" in str(x.get("data-frame")) else
-            1 if "sibnet" in str(x.get("data-frame")) else 0
-        ), reverse=True)
+    soup = BeautifulSoup(html, 'html.parser')
+    links = soup.select("ul.linkler li a")
+    
+    sorted_links = sorted(links, key=lambda x: (
+        2 if "cizgi" in str(x.get("data-frame")) else
+        1 if "sibnet" in str(x.get("data-frame")) else 0
+    ), reverse=True)
 
-        found_url = None
-        for link in sorted_links:
-            src = link.get("data-frame")
-            video_url = await resolve_video_url(session, src, ep_url)
-            if video_url:
-                found_url = video_url
-                break
+    found_url = None
+    for link in sorted_links:
+        src = link.get("data-frame")
+        video_url = await resolve_video_url(session, semaphore, src, ep_url)
+        if video_url:
+            found_url = video_url
+            break
+    
+    if found_url:
+        clean_ep = ep_title.replace(series_title, "").strip()
+        if not clean_ep: clean_ep = ep_title
+        full_title = f"{series_title} - {clean_ep}"
         
-        if found_url:
-            clean_ep = ep_title.replace(series_title, "").strip()
-            if not clean_ep: clean_ep = ep_title
-            full_title = f"{series_title} - {clean_ep}"
-            
-            FINAL_PLAYLIST.append({
-                "group": category,
-                "title": full_title,
-                "logo": poster,
-                "url": found_url
-            })
-            print(f"  [+] {full_title}", flush=True)
-        else:
-            pass
+        FINAL_PLAYLIST.append({
+            "group": category,
+            "title": full_title,
+            "logo": poster,
+            "url": found_url
+        })
+        PROCESSED_COUNT += 1
+        print(f"  [+] ({PROCESSED_COUNT}) {full_title}", flush=True)
 
 async def process_series(session, semaphore, category, series_title, series_url, poster):
-    """Dizi sayfasını tarar"""
-    async with semaphore:
-        html = await fetch_text(session, series_url)
+    # Not: Burada "async with semaphore" KULLANMIYORUZ. Kilitlenme sebebi buydu.
+    # Semafor sadece fetch_text içinde.
     
+    html = await fetch_text(session, semaphore, series_url)
     if not html: return
 
     soup = BeautifulSoup(html, 'html.parser')
     ep_divs = soup.select("div.asisotope div.ajax_post")
     
     if ep_divs:
-        print(f" > {series_title} ({len(ep_divs)} Bölüm) işleniyor...", flush=True)
+        print(f" > {series_title} ({len(ep_divs)} Bölüm) taranıyor...", flush=True)
     
     tasks = []
     for div in ep_divs:
@@ -174,10 +177,15 @@ async def process_series(session, semaphore, category, series_title, series_url,
                 name_s.text.strip(), link_a['href'], poster
             ))
             
-    await asyncio.gather(*tasks)
+    # Bölümleri topluca beklerken semafor tutulmadığı için diğer işler devam eder.
+    if tasks:
+        # Sunucuyu çok yormamak için bölümleri 10'arlı paketler halinde işle
+        chunk_size = 10
+        for i in range(0, len(tasks), chunk_size):
+            chunk = tasks[i:i + chunk_size]
+            await asyncio.gather(*chunk)
 
 async def scan_category(session, semaphore, cat_name, cat_url):
-    """Kategoriyi tarar"""
     print(f"--- {cat_name} Başlatıldı ---", flush=True)
     
     series_tasks = []
@@ -195,7 +203,7 @@ async def scan_category(session, semaphore, cat_name, cat_url):
                 if base.endswith("/"): base = base[:-1]
                 url = f"{base}/page/{page}{query}"
         
-        html = await fetch_text(session, url)
+        html = await fetch_text(session, semaphore, url)
         if not html: break
         
         soup = BeautifulSoup(html, 'html.parser')
@@ -210,15 +218,18 @@ async def scan_category(session, semaphore, cat_name, cat_url):
             
             if t_tag and l_tag:
                 poster = i_tag.get("data-src") if i_tag else ""
+                # Diziyi işleme kuyruğuna ekle (Ama hemen başlatma, topla)
                 series_tasks.append(process_series(
                     session, semaphore, cat_name, 
                     t_tag.text.strip(), l_tag['href'], poster
                 ))
     
-    await asyncio.gather(*series_tasks)
+    # Kategori içindeki tüm dizileri başlat
+    if series_tasks:
+        await asyncio.gather(*series_tasks)
 
 async def main():
-    print("Turbo CizgiMax Bot Başlatılıyor...", flush=True)
+    print("Turbo CizgiMax (Anti-Deadlock) Başlatılıyor...", flush=True)
     start_time = time.time()
     
     semaphore = asyncio.Semaphore(CONCURRENT_LIMIT)
@@ -237,7 +248,6 @@ async def main():
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         f.write("#EXTM3U\n")
         for item in FINAL_PLAYLIST:
-            # HATANIN DÜZELTİLDİĞİ SATIR:
             f.write(f'#EXTINF:-1 group-title="{item["group"]}" tvg-logo="{item["logo"]}", {item["title"]}\n')
             f.write(f'{item["url"]}\n')
 
