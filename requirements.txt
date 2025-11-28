@@ -1,3 +1,4 @@
-aiohttp
+cloudscraper
 beautifulsoup4
-curl_cffi
+pycryptodome
+requests
