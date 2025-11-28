@@ -1,18 +1,17 @@
-import asyncio
-from curl_cffi.requests import AsyncSession
+import cloudscraper
 from bs4 import BeautifulSoup
 import re
 import time
-import random
-import sys
 import json
+import base64
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import unpad
+import sys
 
 # --- AYARLAR ---
 BASE_URL = "https://cizgimax.online"
 OUTPUT_FILE = "cizgimax.m3u"
-CONCURRENT_LIMIT = 3   # Biraz artırdık çünkü artık boşuna beklemeyeceğiz
-MAX_PAGES = 3          # Tarama derinliği
-TIMEOUT = 30
+MAX_PAGES = 3  # Her kategoriden kaç sayfa?
 
 # Kategoriler
 CATEGORIES = {
@@ -25,148 +24,177 @@ CATEGORIES = {
     "Komedi": f"{BASE_URL}/diziler/?s_type&tur[0]=komedi&orderby=date&order=DESC"
 }
 
-# Headerlar
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-    "Referer": BASE_URL,
-}
+# CloudScraper Nesnesi (CloudflareKiller)
+scraper = cloudscraper.create_scraper(
+    browser={
+        'browser': 'chrome',
+        'platform': 'windows',
+        'desktop': True
+    }
+)
 
 FINAL_PLAYLIST = []
 
-async def random_sleep(min_t=0.5, max_t=1.5):
-    await asyncio.sleep(random.uniform(min_t, max_t))
-
-async def fetch_text(session, url, referer=None):
-    headers = HEADERS.copy()
-    if referer: headers["Referer"] = referer
-    
+def decrypt_cizgiduo(encrypted_data, password):
+    """
+    Kotlin Kodundaki CizgiDuo AES Şifre Çözme Mantığı
+    AesHelper.cryptoAESHandler(bePlayerData, bePlayerPass.toByteArray(), false)
+    """
     try:
-        response = await session.get(url, headers=headers, timeout=TIMEOUT, impersonate="chrome120")
-        if response.status_code == 200:
-            return response.text
-        elif response.status_code == 403:
-            # 403 alırsak sessizce geç, log kirliliği yapma (CizgiPass vb.)
-            return None
-        elif response.status_code == 400 and "sibnet" in url:
-            print(f"Sibnet 400 Hatası: {url} (Referer veya ID sorunu)")
-            return None
-    except Exception:
-        pass
-    return None
+        # Kotlin kodu AES/CBC/PKCS5Padding kullanıyor genelde
+        # Password key ve IV olarak kullanılıyor olabilir veya OpenSSL formatıdır.
+        # Genellikle bu tür JS playerlarda Key = Password, IV = Password (veya türevi)
+        
+        key = password.encode('utf-8')
+        # Anahtar uzunluğu 16, 24 veya 32 byte olmalı. Eksikse tamamla, fazlaysa kes.
+        if len(key) > 32: key = key[:32]
+        elif len(key) in [16, 24, 32]: pass
+        else: key = key.ljust(32, b'\0') # Basit padding
 
-async def resolve_video_source(session, iframe_url, original_page_url):
-    """
-    iframe url'sinden video linkini çözer.
-    """
-    if not iframe_url: return None
-
-    # URL Düzeltme
-    if iframe_url.startswith("//"): iframe_url = "https:" + iframe_url
-
-    # --- SIBNET ÇÖZÜCÜ (ÖZEL DÜZELTME) ---
-    # Loglardaki hata: shell.php?videoid=... 400 Bad Request veriyor.
-    # Çözüm: Bunu video sayfasına çevirip istek atacağız.
-    if "sibnet.ru" in iframe_url:
-        video_id = None
-        # ID'yi URL'den çekmeye çalış
-        if "videoid=" in iframe_url:
-            match = re.search(r'videoid=(\d+)', iframe_url)
-            if match: video_id = match.group(1)
-        elif "/video/" in iframe_url:
-            match = re.search(r'/video/(\d+)', iframe_url)
-            if match: video_id = match.group(1)
-            
-        if video_id:
-            # Sibnet shell.php yerine doğrudan video sayfasına git
-            sibnet_page_url = f"https://video.sibnet.ru/video/{video_id}"
-            
-            # Sibnet Referer Kontrolü Yapar: Referer CizgiMax olmalı
-            text = await fetch_text(session, sibnet_page_url, referer=original_page_url)
-            
-            if text:
-                # Video linkini regex ile bul
-                slug_match = re.search(r'player\.src\(\[\{src:\s*"([^"]+)"', text)
-                if slug_match:
-                    slug = slug_match.group(1)
-                    if slug.startswith("/"):
-                        return f"https://video.sibnet.ru{slug}"
-                    return slug
-        else:
-            # ID bulamazsak direkt dene (muhtemelen çalışmaz ama)
-            pass
-
-    # --- DİĞER KAYNAKLAR (M3U8) ---
-    # CizgiPass/Duo 403 verdiği için onları pas geçiyoruz veya şansımızı deniyoruz.
-    if "cizgipass" in iframe_url or "cizgiduo" in iframe_url:
-        # Bu kaynaklar GitHub IP'sini engelliyor, boşuna deneme yapıp zaman kaybetmeyelim.
+        # Şifreli veri Base64 decode
+        encrypted_bytes = base64.b64decode(encrypted_data)
+        
+        # IV, şifreli verinin genelde başında gelmezse, key'in kendisi olabilir
+        # Ancak OpenSSL formatında "Salted__" headerı yoksa genelde IV = Key'dir web playerlarda.
+        # Cloudstream AESHelper kaynak koduna bakıldığında IV genelde parametre geçilmezse boş byte array veya key olabilir.
+        
+        # Deneme 1: IV = Key (Yaygın yöntem)
+        cipher = AES.new(key, AES.MODE_CBC, iv=key[:16])
+        decrypted = unpad(cipher.decrypt(encrypted_bytes), AES.block_size)
+        return decrypted.decode('utf-8')
+        
+    except Exception as e:
+        # print(f"AES Decrypt Hatası: {e}")
         return None
 
-    # Diğer genel kaynaklar için
-    text = await fetch_text(session, iframe_url, referer=original_page_url)
-    if text:
-        m3u8_match = re.search(r'(https?://[^"\']+\.m3u8)', text)
-        if m3u8_match: return m3u8_match.group(1)
+def get_source_cizgiduo(url, referer):
+    """CizgiDuo Kaynağını Çözer"""
+    try:
+        html = scraper.get(url, headers={"Referer": referer}).text
         
-        mp4_match = re.search(r'(https?://[^"\']+\.mp4)', text)
-        if mp4_match: return mp4_match.group(1)
-
+        # Regex: bePlayer('pass', '{json_data}')
+        match = re.search(r"bePlayer\('([^']+)',\s*'(\{[^}]+\})'\)", html)
+        if match:
+            password = match.group(1)
+            json_data_enc = match.group(2)
+            
+            # İçindeki "data" alanını bul
+            # Genellikle json_data_enc şu formattadır: { "data": "sifreli_metin", ... }
+            try:
+                # Basit json parse (tırnak işaretlerine dikkat)
+                enc_text_match = re.search(r'"data"\s*:\s*"([^"]+)"', json_data_enc)
+                if enc_text_match:
+                    encrypted_text = enc_text_match.group(1)
+                    decrypted_json = decrypt_cizgiduo(encrypted_text, password)
+                    
+                    if decrypted_json:
+                        # İçinden video_location al
+                        # video_location":"https:\/\/..."
+                        m3u_match = re.search(r'video_location":"([^"]+)"', decrypted_json)
+                        if m3u_match:
+                            m3u_link = m3u_match.group(1).replace("\\", "")
+                            return m3u_link
+            except:
+                pass
+    except Exception as e:
+        print(f"CizgiDuo Hatası: {e}")
     return None
 
-async def process_episode(session, category, series_title, ep_title, ep_url, poster):
-    """Bölüm sayfasına girer ve videoyu bulur."""
-    # Bölüm sayfasına git
-    html = await fetch_text(session, ep_url, referer=BASE_URL)
-    if not html: return
-
-    soup = BeautifulSoup(html, 'html.parser')
-    links = soup.select("ul.linkler li a")
-    
-    found_url = None
-    
-    # Sibnet linklerini en başa al, CizgiPass'leri en sona at
-    sorted_links = sorted(links, key=lambda x: (
-        1 if "sibnet" in (x.get("data-frame") or "") else 
-        0 if "cizgi" not in (x.get("data-frame") or "") else -1
-    ), reverse=True)
-
-    for link in sorted_links:
-        iframe_src = link.get("data-frame")
-        if not iframe_src: continue
-        
-        # Videoyu çöz
-        video_url = await resolve_video_source(session, iframe_src, ep_url)
-        
-        if video_url:
-            found_url = video_url
-            break 
-    
-    if found_url:
-        clean_ep = ep_title.replace(series_title, "").strip()
-        if not clean_ep: clean_ep = ep_title
-        
-        full_title = f"{series_title} - {clean_ep}"
-        
-        FINAL_PLAYLIST.append({
-            "group": category,
-            "title": full_title,
-            "logo": poster,
-            "url": found_url
-        })
-        print(f"  [+] Eklendi: {full_title}")
-    else:
-        # Sadece hata logunu bas, içerik yoksa yapacak bir şey yok (IP Ban)
+def get_source_sibnet(url, referer):
+    """Sibnet Kaynağını Çözer"""
+    try:
+        # ID'yi URL'den çek
+        video_id = None
+        if "videoid=" in url:
+            video_id = re.search(r'videoid=(\d+)', url).group(1)
+        elif "/video/" in url:
+            video_id = re.search(r'/video/(\d+)', url).group(1)
+            
+        if video_id:
+            real_url = f"https://video.sibnet.ru/video/{video_id}"
+            html = scraper.get(real_url, headers={"Referer": referer}).text
+            
+            slug = re.search(r'player\.src\(\[\{src:\s*"([^"]+)"', html)
+            if slug:
+                final_slug = slug.group(1)
+                if final_slug.startswith("/"): return f"https://video.sibnet.ru{final_slug}"
+                return final_slug
+    except:
         pass
+    return None
 
-async def process_series(session, semaphore, category, series_title, series_url, poster):
-    async with semaphore:
-        html = await fetch_text(session, series_url)
-        if not html: return
+def process_episode(category, series_title, ep_title, ep_url, poster):
+    try:
+        # Cloudscraper ile bölüm sayfasına git
+        resp = scraper.get(ep_url, headers={"Referer": BASE_URL})
+        if resp.status_code != 200: return
 
-        soup = BeautifulSoup(html, 'html.parser')
+        soup = BeautifulSoup(resp.text, 'html.parser')
+        links = soup.select("ul.linkler li a")
+        
+        found_url = None
+        
+        # Öncelik Sırası: CizgiDuo (Kaliteli M3U8) -> Sibnet -> Diğerleri
+        # Linkleri sırala
+        sorted_links = sorted(links, key=lambda x: (
+            2 if "cizgiduo" in str(x.get("data-frame")) else
+            1 if "sibnet" in str(x.get("data-frame")) else 0
+        ), reverse=True)
+
+        for link in sorted_links:
+            iframe_src = link.get("data-frame")
+            if not iframe_src: continue
+            
+            if iframe_src.startswith("//"): iframe_src = "https:" + iframe_src
+            
+            # --- KAYNAK ÇÖZME ---
+            if "cizgiduo" in iframe_src or "cizgipass" in iframe_src:
+                found_url = get_source_cizgiduo(iframe_src, ep_url)
+            
+            elif "sibnet" in iframe_src:
+                found_url = get_source_sibnet(iframe_src, ep_url)
+            
+            # Eğer yukarıdaki fonksiyonlar bulamazsa veya başka kaynaksa m3u8 ara
+            if not found_url:
+                try:
+                    src_html = scraper.get(iframe_src, headers={"Referer": ep_url}).text
+                    m3u8 = re.search(r'(https?://[^"\']+\.m3u8)', src_html)
+                    if m3u8: found_url = m3u8.group(1)
+                except: pass
+
+            if found_url: break
+        
+        if found_url:
+            clean_ep = ep_title.replace(series_title, "").strip()
+            if not clean_ep: clean_ep = ep_title
+            
+            full_title = f"{series_title} - {clean_ep}"
+            
+            # Kategori + Başlık ID'si (Gruplama için)
+            # HTML tarafında doğru çalışması için temiz başlık gönderiyoruz
+            
+            FINAL_PLAYLIST.append({
+                "group": category,
+                "title": full_title,
+                "logo": poster,
+                "url": found_url
+            })
+            print(f"  [+] Eklendi: {full_title}")
+        else:
+            print(f"  [-] Video Yok: {ep_title}")
+            
+    except Exception as e:
+        print(f"Bölüm İşleme Hatası: {e}")
+
+def process_series(category, series_title, series_url, poster):
+    print(f" > Dizi Taranıyor: {series_title}")
+    try:
+        resp = scraper.get(series_url)
+        if resp.status_code != 200: return
+        
+        soup = BeautifulSoup(resp.text, 'html.parser')
         episodes_divs = soup.select("div.asisotope div.ajax_post")
         
-        tasks = []
         for ep_div in episodes_divs:
             name_span = ep_div.select_one("span.episode-names")
             if not name_span: continue
@@ -176,17 +204,13 @@ async def process_series(session, semaphore, category, series_title, series_url,
             if not link_tag: continue
             ep_link = link_tag['href']
             
-            tasks.append(process_episode(session, category, series_title, ep_name, ep_link, poster))
+            process_episode(category, series_title, ep_name, ep_link, poster)
+            time.sleep(0.5) # Cloudflare kızmasın diye hafif bekleme
             
-        if tasks:
-            print(f" > Dizi: {series_title} ({len(tasks)} Bölüm)")
-            # 10'lu gruplar halinde işle (Hızlandırıldı)
-            chunk_size = 10
-            for i in range(0, len(tasks), chunk_size):
-                chunk = tasks[i:i + chunk_size]
-                await asyncio.gather(*chunk)
+    except Exception as e:
+        print(f"Dizi Hatası: {e}")
 
-async def scan_category(session, semaphore, cat_name, cat_url):
+def scan_category(cat_name, cat_url):
     print(f"\n--- Kategori: {cat_name} ---")
     
     for page in range(1, MAX_PAGES + 1):
@@ -204,42 +228,54 @@ async def scan_category(session, semaphore, cat_name, cat_url):
                 url = f"{base}/page/{page}{query}"
 
         print(f" >> Sayfa {page}...")
-        html = await fetch_text(session, url)
-        if not html: break
         
-        soup = BeautifulSoup(html, 'html.parser')
-        items = soup.select("ul.filter-results li")
-        
-        if not items: break
+        try:
+            resp = scraper.get(url)
+            # Cloudflare kontrolü
+            if "Just a moment" in resp.text:
+                print("!!! Cloudflare Takıldı (Tekrar Deneniyor) !!!")
+                time.sleep(5)
+                resp = scraper.get(url) # Tekrar dene
             
-        tasks = []
-        for item in items:
-            title_tag = item.select_one("h2.truncate")
-            if not title_tag: continue
-            title = title_tag.text.strip()
+            if resp.status_code != 200: 
+                print(f"Erişim Hatası: {resp.status_code}")
+                break
             
-            link_tag = item.select_one("div.poster-subject a")
-            if not link_tag: continue
-            link = link_tag['href']
+            soup = BeautifulSoup(resp.text, 'html.parser')
+            items = soup.select("ul.filter-results li")
             
-            img_tag = item.select_one("div.poster-media img")
-            poster = img_tag.get("data-src") if img_tag else ""
-            
-            tasks.append(process_series(session, semaphore, category=cat_name, series_title=title, series_url=link, poster=poster))
-        
-        await asyncio.gather(*tasks)
+            if not items:
+                print("   -> İçerik bitti.")
+                break
+                
+            for item in items:
+                title_tag = item.select_one("h2.truncate")
+                if not title_tag: continue
+                title = title_tag.text.strip()
+                
+                link_tag = item.select_one("div.poster-subject a")
+                if not link_tag: continue
+                link = link_tag['href']
+                
+                img_tag = item.select_one("div.poster-media img")
+                poster = img_tag.get("data-src") if img_tag else ""
+                
+                process_series(cat_name, title, link, poster)
+                
+        except Exception as e:
+            print(f"Kategori Hatası: {e}")
+            break
 
-async def main():
-    print("CizgiMax Sibnet Fix Bot...")
+def main():
+    print("CizgiMax Cloudstream Portu Başlatılıyor...")
     start_time = time.time()
     
-    semaphore = asyncio.Semaphore(CONCURRENT_LIMIT)
-    
-    async with AsyncSession() as session:
-        for c_name, c_url in CATEGORIES.items():
-            await scan_category(session, semaphore, c_name, c_url)
+    for c_name, c_url in CATEGORIES.items():
+        scan_category(c_name, c_url)
     
     print(f"\nToplam {len(FINAL_PLAYLIST)} içerik. Kaydediliyor...")
+    
+    # Sıralama
     FINAL_PLAYLIST.sort(key=lambda x: (x["group"], x["title"]))
     
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
@@ -248,7 +284,7 @@ async def main():
             f.write(f'#EXTINF:-1 group-title="{item["group"]}" tvg-logo="{item["logo"]}", {item["title"]}\n')
             f.write(f'{item["url"]}\n')
 
+    print(f"Bitti! Süre: {time.time() - start_time:.2f}sn")
+
 if __name__ == "__main__":
-    if sys.platform == 'win32':
-        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-    asyncio.run(main())
+    main()
