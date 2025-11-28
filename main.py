@@ -1,6 +1,5 @@
 import requests
 from bs4 import BeautifulSoup
-import time
 
 BASE_URL = "https://cizgimax.online"
 CATEGORIES = {
@@ -16,7 +15,6 @@ CATEGORIES = {
 M3U_FILENAME = "cizgimax.m3u"
 
 def fetch_category(category_path, max_pages=3):
-    """Belirtilen kategoriden içerikleri toplar."""
     items = []
     for page in range(1, max_pages+1):
         url = f"{BASE_URL}/diziler/page/{page}{category_path}"
@@ -40,7 +38,6 @@ def fetch_category(category_path, max_pages=3):
     return items
 
 def get_stream_link(content_url):
-    """İçerik detay sayfasından stream iframe çıkartır."""
     resp = requests.get(content_url)
     soup = BeautifulSoup(resp.text, "html.parser")
     link_lis = soup.select("ul.linkler li")
@@ -48,7 +45,6 @@ def get_stream_link(content_url):
         a_tag = li.select_one("a")
         if a_tag and "data-frame" in a_tag.attrs:
             return a_tag["data-frame"]
-    # Not found
     return None
 
 def generate_m3u(category_dict):
@@ -56,29 +52,22 @@ def generate_m3u(category_dict):
     for cat_name, contents in category_dict.items():
         for item in contents:
             stream_url = get_stream_link(item["url"])
-            # Kategorileri group-title ile ayırıyoruz. tvg-logo da eklenebilir.
             extinf = f'#EXTINF:-1 group-title="{cat_name}" tvg-logo="{item["poster"]}",{item["title"]}'
             lines.append(extinf)
             lines.append(stream_url if stream_url else "")
     return "\n".join(lines)
 
 def main():
-    while True:
-        category_data = {}
-        for cat_name, cat_path in CATEGORIES.items():
-            print(f"{cat_name} kategorisi çekiliyor...")
-            contents = fetch_category(cat_path, max_pages=3)
-            category_data[cat_name] = contents
-        print("Stream linkleri bulunuyor ve m3u hazırlanıyor...")
-        m3u_text = generate_m3u(category_data)
-        with open(M3U_FILENAME, "w", encoding="utf-8") as f:
-            f.write(m3u_text)
-        print(f"{M3U_FILENAME} dosyasına yazıldı.")
-
-        # Github otomasyonu için örnek:
-        # os.system(f"git add {M3U_FILENAME} && git commit -m 'm3u güncellendi' && git push")
-        print("20 dakika sonra tekrar güncellenecek...")
-        time.sleep(20 * 60)
+    category_data = {}
+    for cat_name, cat_path in CATEGORIES.items():
+        print(f"{cat_name} kategorisi çekiliyor...")
+        contents = fetch_category(cat_path, max_pages=3)
+        category_data[cat_name] = contents
+    print("Stream linkleri bulunuyor ve m3u hazırlanıyor...")
+    m3u_text = generate_m3u(category_data)
+    with open(M3U_FILENAME, "w", encoding="utf-8") as f:
+        f.write(m3u_text)
+    print(f"{M3U_FILENAME} dosyasına yazıldı.")
 
 if __name__ == "__main__":
     main()
