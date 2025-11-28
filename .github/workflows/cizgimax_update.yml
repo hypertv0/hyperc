@@ -1,8 +1,8 @@
-name: CizgiMax Selenium Bot
+name: CizgiMax Hibrit Bot
 
 on:
   schedule:
-    - cron: '0 18 * * *'
+    - cron: '0 12 * * *' # Her gün 12:00 UTC (TSİ 15:00)
   workflow_dispatch:
 
 jobs:
@@ -12,31 +12,36 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout
+      - name: Repoyu Çek (Checkout)
         uses: actions/checkout@v3
 
-      - name: Set up Python
+      - name: Python Kurulumu
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      # Chrome ve Sürücüleri Kurulumu (SeleniumBase bunu sever)
-      - name: Install Chrome & Drivers
+      - name: Gerekli Kütüphaneleri Yükle
         run: |
+          # Sistem güncellemeleri ve Chrome kurulumu (Selenium için)
           sudo apt-get update
           sudo apt-get install -y google-chrome-stable xvfb
+          
+          # Python kütüphanelerini yükle (requirements.txt)
+          pip install --upgrade pip
           pip install -r requirements.txt
+          
+          # Selenium Driver kurulumu
           sbase install chromedriver
 
-      # Kodun Çalıştırılması (XVFB ile Sanal Ekran Açılır)
-      - name: Run Scraper (with XVFB)
+      - name: Botu Çalıştır (Sanal Ekran ile)
         run: |
+          # xvfb-run: Arka planda sanal ekran açar
           xvfb-run python main.py
 
-      - name: Commit & Push
+      - name: M3U Dosyasını Kaydet ve Gönder
         run: |
-          git config --global user.name "Selenium Bot"
-          git config --global user.email "bot@github.com"
+          git config --global user.name "Hibrit Bot"
+          git config --global user.email "bot@cizgimax"
           git add cizgimax.m3u
-          git commit -m "Playlist Updated via Selenium" || exit 0
+          git commit -m "Liste Güncellendi (Hibrit Mod)" || exit 0
           git push
