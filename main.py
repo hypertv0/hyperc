@@ -5,16 +5,15 @@ import re
 import time
 import base64
 import sys
-import random
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 
 # --- AYARLAR ---
 BASE_URL = "https://cizgimax.online"
 OUTPUT_FILE = "cizgimax.m3u"
-CONCURRENT_LIMIT = 50   # ÇOK HIZLI (50 Bağlantı)
-MAX_PAGES = 3           # Tarama Derinliği
-TIMEOUT = 8             # 8 saniyede açılmayan linki atla (Hız için)
+CONCURRENT_LIMIT = 15   # 15 İdealdir (Siteyi kızdırmaz)
+MAX_PAGES = 3           # Tarama Sayfası
+TIMEOUT = 25            # Bekleme süresini uzattık (Yavaş site için)
 
 CATEGORIES = {
     "Son Eklenenler": f"{BASE_URL}/diziler/?orderby=date&order=DESC",
@@ -28,7 +27,7 @@ CATEGORIES = {
 
 FINAL_PLAYLIST = []
 
-# --- YARDIMCI FONKSİYONLAR ---
+# --- ŞİFRE ÇÖZME ---
 def decrypt_aes(encrypted, password):
     try:
         key = password.encode('utf-8')
@@ -41,95 +40,116 @@ def decrypt_aes(encrypted, password):
         return dec.decode('utf-8', 'ignore').strip().replace('\x00', '')
     except: return None
 
+# --- AĞ İSTEĞİ (OTURUM KORUMALI) ---
 async def fetch_text(session, url, referer=None):
-    headers = {"Referer": referer} if referer else {}
+    headers = {
+        "Referer": referer if referer else BASE_URL,
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    }
     try:
-        # Rastgele tarayıcı imzası ile engelleri aşmayı dene
-        impersonate_list = ["chrome110", "chrome120", "edge101", "safari15_3"]
-        response = await session.get(url, headers=headers, timeout=TIMEOUT, impersonate=random.choice(impersonate_list))
-        if response.status_code == 200: return response.text
-    except: pass
+        # Session cookie'lerini korur, her seferinde yeni browser açmaz
+        response = await session.get(url, headers=headers, timeout=TIMEOUT)
+        if response.status_code == 200:
+            return response.text
+        elif response.status_code == 403:
+            # print(f"  [!] 403 Erişim Engeli: {url}")
+            pass
+    except Exception:
+        pass
     return None
 
-# --- VİDEO ÇÖZÜCÜ (GENEL TARAMA) ---
-async def extract_video(session, iframe_url, referer_url):
+# --- VİDEO ÇÖZÜCÜ ---
+async def resolve_video(session, iframe_url, referer_url):
     if not iframe_url: return None
     if iframe_url.startswith("//"): iframe_url = "https:" + iframe_url
 
-    # Sayfa kaynağını çek
-    html = await fetch_text(session, iframe_url, referer=referer_url)
-    if not html: return None
-
-    # 1. YÖNTEM: CizgiDuo Şifre Çözme
+    # 1. CizgiDuo / CizgiPass
     if "cizgi" in iframe_url:
-        match = re.search(r"bePlayer\('([^']+)',\s*'(\{[^}]+\})'\)", html)
-        if match:
-            dm = re.search(r'"data"\s*:\s*"([^"]+)"', match.group(2))
-            if dm:
-                dec = decrypt_aes(dm.group(1), match.group(1))
-                if dec:
-                    res = re.search(r'video_location":"([^"]+)"', dec)
-                    if res: return res.group(1).replace("\\", "")
+        html = await fetch_text(session, iframe_url, referer=referer_url)
+        if html:
+            # Şifreli Veri
+            m = re.search(r"bePlayer\('([^']+)',\s*'(\{[^}]+\})'\)", html)
+            if m:
+                dm = re.search(r'"data"\s*:\s*"([^"]+)"', m.group(2))
+                if dm:
+                    dec = decrypt_aes(dm.group(1), m.group(1))
+                    if dec:
+                        res = re.search(r'video_location":"([^"]+)"', dec)
+                        if res: return res.group(1).replace("\\", "")
+            
+            # Şifresiz Açık Veri (Bazen şifresiz olur)
+            direct_m3u = re.search(r'(https?://[^"\'\s]+\.m3u8)', html)
+            if direct_m3u: return direct_m3u.group(1)
 
-    # 2. YÖNTEM: Sibnet (Link Düzeltme)
-    if "sibnet" in iframe_url:
-        slug = re.search(r'player\.src\(\[\{src:\s*"([^"]+)"', html)
-        if slug:
-            s = slug.group(1)
-            return f"https://video.sibnet.ru{s}" if s.startswith("/") else s
+    # 2. Sibnet
+    elif "sibnet" in iframe_url:
+        if "|" in iframe_url: iframe_url = iframe_url.split("|")[0]
+        vid = None
+        if "videoid=" in iframe_url: vid = re.search(r'videoid=(\d+)', iframe_url)
+        elif "/video/" in iframe_url: vid = re.search(r'/video/(\d+)', iframe_url)
+        
+        if vid:
+            real = f"https://video.sibnet.ru/video/{vid.group(1)}"
+            html = await fetch_text(session, real, referer=referer_url)
+            if html:
+                slug = re.search(r'player\.src\(\[\{src:\s*"([^"]+)"', html)
+                if slug:
+                    s = slug.group(1)
+                    return f"https://video.sibnet.ru{s}" if s.startswith("/") else s
 
-    # 3. YÖNTEM: KÖR TARAMA (Universal Regex)
-    # Sayfadaki HERHANGİ bir .m3u8 linkini bul
-    m3u8_matches = re.findall(r'(https?://[^"\'\s]+\.m3u8)', html)
-    for m in m3u8_matches:
-        return m # İlk bulduğunu döndür
-
-    # Sayfadaki HERHANGİ bir .mp4 linkini bul
-    mp4_matches = re.findall(r'(https?://[^"\'\s]+\.mp4)', html)
-    for m in mp4_matches:
-        return m
+    # 3. Genel Tarama (Yedek)
+    else:
+        html = await fetch_text(session, iframe_url, referer=referer_url)
+        if html:
+            m3u = re.search(r'(https?://[^"\'\s]+\.m3u8)', html)
+            if m3u: return m3u.group(1)
+            mp4 = re.search(r'(https?://[^"\'\s]+\.mp4)', html)
+            if mp4: return mp4.group(1)
 
     return None
 
-# --- BÖLÜM İŞLEYİCİ ---
+# --- İŞLEMCİLER ---
 async def process_episode(session, semaphore, category, series_title, ep_title, ep_url, poster):
-    async with semaphore: # Havuz limiti
+    async with semaphore:
         html = await fetch_text(session, ep_url, referer=BASE_URL)
         if not html: return
 
         soup = BeautifulSoup(html, 'html.parser')
         links = soup.select("ul.linkler li a")
         
-        # Linkleri topla
-        iframe_list = []
-        for l in links:
-            src = l.get("data-frame")
-            if src: iframe_list.append(src)
-        
-        # Sibnet'i ve Cizgi'yi öne al (Daha hızlı açılırlar)
-        iframe_list.sort(key=lambda x: 0 if "sibnet" in x or "cizgi" in x else 1)
+        # Öncelik Sıralaması: Sibnet > Cizgi > Diğer
+        # Sibnet GitHub'a daha az engel koyar, onu öne alıyoruz.
+        sorted_links = sorted(links, key=lambda x: (
+            2 if "sibnet" in str(x.get("data-frame")) else
+            1 if "cizgi" in str(x.get("data-frame")) else 0
+        ), reverse=True)
 
-        found_url = None
-        for src in iframe_list:
-            found_url = await extract_video(session, src, ep_url)
-            if found_url: break # Bulduysan hemen çık
+        found = None
+        for link in sorted_links:
+            src = link.get("data-frame")
+            found = await resolve_video(session, src, ep_url)
+            if found: break
         
-        if found_url:
+        if found:
             clean_ep = ep_title.replace(series_title, "").strip()
             if not clean_ep: clean_ep = ep_title
+            
+            # Bölüm ismi sayı ise başına 'Bölüm' ekle (Estetik)
+            if clean_ep.isdigit(): clean_ep = f"Bölüm {clean_ep}"
+            
             full_title = f"{series_title} - {clean_ep}"
             
             FINAL_PLAYLIST.append({
                 "group": category,
                 "title": full_title,
                 "logo": poster,
-                "url": found_url
+                "url": found
             })
             print(f"  [+] {full_title}", flush=True)
-        # else: print(f"  [-] Yok: {ep_title}", flush=True)
+        # else: print(f"  [-] {ep_title} (Bulunamadı)", flush=True)
 
 async def process_series(session, semaphore, category, series_title, series_url, poster):
-    # Dizi sayfasını çek
+    # Dizi sayfasına gir (Semafor kullanma, sadece fetch'de var)
     html = await fetch_text(session, series_url)
     if not html: return
 
@@ -138,18 +158,17 @@ async def process_series(session, semaphore, category, series_title, series_url,
     
     if ep_divs:
         print(f" > {series_title} ({len(ep_divs)} Bölüm)", flush=True)
-    
+        
     tasks = []
     for div in ep_divs:
-        name_s = div.select_one("span.episode-names")
-        link_a = div.select_one("a")
-        if name_s and link_a:
+        name = div.select_one("span.episode-names")
+        link = div.select_one("a")
+        if name and link:
             tasks.append(process_episode(
                 session, semaphore, category, series_title, 
-                name_s.text.strip(), link_a['href'], poster
+                name.text.strip(), link['href'], poster
             ))
             
-    # Hepsini aynı anda havuza at (Semaphore ile sınırlanacak)
     if tasks:
         await asyncio.gather(*tasks)
 
@@ -181,24 +200,23 @@ async def scan_category(session, semaphore, cat_name, cat_url):
                     t.text.strip(), l['href'], poster
                 ))
     
-    # Tüm dizileri paralel işle
     if series_tasks:
         await asyncio.gather(*series_tasks)
 
 async def main():
-    print("Turbo Universal Bot v4 Başlatılıyor...", flush=True)
+    print("Stabil CizgiMax Bot Başlatılıyor...", flush=True)
     start = time.time()
-    
-    # 50 Bağlantı Limiti
     semaphore = asyncio.Semaphore(CONCURRENT_LIMIT)
     
-    async with AsyncSession() as session:
+    # TEK OTURUM (impersonate='chrome124')
+    # Bu oturum tüm isteklerde korunur, böylece Cloudflare çerezleri saklanır.
+    async with AsyncSession(impersonate="chrome124") as session:
         cat_tasks = []
         for c, u in CATEGORIES.items():
             cat_tasks.append(scan_category(session, semaphore, c, u))
         await asyncio.gather(*cat_tasks)
     
-    print(f"\nToplam {len(FINAL_PLAYLIST)} içerik. Kaydediliyor...", flush=True)
+    print(f"\nToplam {len(FINAL_PLAYLIST)} içerik. M3U yazılıyor...", flush=True)
     FINAL_PLAYLIST.sort(key=lambda x: (x["group"], x["title"]))
     
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
