@@ -1,4 +1,6 @@
 seleniumbase
+curl_cffi
 beautifulsoup4
 pycryptodome
 lxml
+requests
