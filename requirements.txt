@@ -1,3 +1,4 @@
-curl_cffi
+seleniumbase
 beautifulsoup4
 pycryptodome
+lxml
