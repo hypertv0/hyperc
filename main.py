@@ -12,115 +12,90 @@ from Crypto.Util.Padding import unpad
 
 # --- AYARLAR ---
 BASE_URL = "https://cizgimax.online"
-SITEMAP_URL = "https://cizgimax.online/sitemap.xml"
+SITEMAP_INDEX = "https://cizgimax.online/sitemap.xml"
 OUTPUT_FILE = "cizgimax.m3u"
-CONCURRENT_LIMIT = 50   # 50 Eşzamanlı bağlantı (Sitemap olduğu için hızlı olabiliriz)
-TIMEOUT = 15            # İstek zaman aşımı
 
-# Sonuç Listesi
+# HIZ AYARLARI (DİKKAT: Çok artırma ban yersin)
+CONCURRENT_LIMIT = 20   # Aynı anda işlenecek bölüm sayısı
+SITEMAP_LIMIT = 5       # Kaç tane alt sitemap taransın? (Her biri 1000 link. 5 = 5000 en güncel bölüm)
+TIMEOUT = 20            # İstek zaman aşımı
+
 FINAL_PLAYLIST = []
-# İşlenecek Linkler Kuyruğu
-URL_QUEUE = set() # Aynı linki 2 kere eklememek için set kullanıyoruz
+URL_QUEUE = asyncio.Queue()
+PROCESSED = 0
+TOTAL_URLS = 0
 
-# --- ŞİFRE ÇÖZME (KOTLIN PORTU) ---
+# --- KOTLIN AES PORTU (CizgiDuo/Pass) ---
 def decrypt_aes(encrypted, password):
     try:
         key = password.encode('utf-8')
         if len(key) > 32: key = key[:32]
         elif len(key) < 32: key = key.ljust(32, b'\0')
         iv = key[:16]
+        encrypted_bytes = base64.b64decode(encrypted)
         cipher = AES.new(key, AES.MODE_CBC, iv=iv)
-        try: dec = unpad(cipher.decrypt(base64.b64decode(encrypted)), AES.block_size)
-        except: dec = cipher.decrypt(base64.b64decode(encrypted))
+        try: dec = unpad(cipher.decrypt(encrypted_bytes), AES.block_size)
+        except: dec = cipher.decrypt(encrypted_bytes)
         return dec.decode('utf-8', 'ignore').strip().replace('\x00', '')
     except: return None
 
 # --- AĞ İSTEKLERİ ---
 async def fetch_text(session, url, referer=None):
-    headers = {"Referer": referer if referer else BASE_URL}
+    # Sitenin HTML kodundaki headerları taklit ediyoruz
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Referer": referer if referer else BASE_URL,
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Sec-Ch-Ua": '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "same-origin",
+        "Upgrade-Insecure-Requests": "1"
+    }
     try:
-        # Browser taklidi
         response = await session.get(url, headers=headers, timeout=TIMEOUT, impersonate="chrome120")
         if response.status_code == 200:
             return response.text
+        elif response.status_code == 403:
+            # print(f"  [!] 403 Erişim Engeli: {url}")
+            pass
     except:
         pass
     return None
-
-# --- SITEMAP AYRIŞTIRICI ---
-async def parse_sitemap(session):
-    print("Sitemap Haritası İndiriliyor...", flush=True)
-    
-    # 1. Ana Sitemap'i çek
-    xml_text = await fetch_text(session, SITEMAP_URL)
-    if not xml_text:
-        print("!!! Sitemap çekilemedi. Site engelliyor olabilir.", flush=True)
-        return
-
-    # XML Parse
-    try:
-        # XML namespace temizliği (bazen ns0:loc gibi gelir)
-        xml_text = re.sub(r' xmlns="[^"]+"', '', xml_text, count=1)
-        root = ET.fromstring(xml_text)
-        
-        sub_sitemaps = []
-        # Sitemap index mi yoksa urlset mi?
-        if root.tag.endswith("sitemapindex"):
-            for sitemap in root.findall("sitemap"):
-                loc = sitemap.find("loc").text
-                # Genellikle 'post-sitemap' dizileri/bölümleri içerir
-                if "post-sitemap" in loc or "diziler-sitemap" in loc:
-                    sub_sitemaps.append(loc)
-        else:
-            # Tek sitemap ise direkt işle
-            sub_sitemaps.append(SITEMAP_URL)
-
-        print(f"Bulunan Alt Sitemap Sayısı: {len(sub_sitemaps)}", flush=True)
-
-        # 2. Alt Sitemapleri çek ve URL'leri topla
-        for sub_url in sub_sitemaps:
-            print(f" > Taranıyor: {sub_url}", flush=True)
-            sub_xml = await fetch_text(session, sub_url)
-            if not sub_xml: continue
-            
-            sub_xml = re.sub(r' xmlns="[^"]+"', '', sub_xml, count=1)
-            sub_root = ET.fromstring(sub_xml)
-            
-            for url_tag in sub_root.findall("url"):
-                loc = url_tag.find("loc").text
-                # Sadece bölüm izleme sayfalarını al (diziler/dizi-adi-bolum-izle)
-                # Cloudstream mantığına göre filtreleme:
-                if "/diziler/" in loc and ("-izle" in loc or "bolum" in loc):
-                    URL_QUEUE.add(loc)
-                    
-        print(f"\nToplam {len(URL_QUEUE)} adet bölüm linki bulundu!", flush=True)
-        
-    except Exception as e:
-        print(f"Sitemap Hatası: {e}", flush=True)
 
 # --- VİDEO ÇÖZÜCÜ ---
 async def resolve_video(session, iframe_url, referer_url):
     if not iframe_url: return None
     if iframe_url.startswith("//"): iframe_url = "https:" + iframe_url
 
-    # CizgiDuo (AES)
+    # 1. CizgiDuo / CizgiPass (Şifreli)
     if "cizgiduo" in iframe_url or "cizgipass" in iframe_url:
         html = await fetch_text(session, iframe_url, referer=referer_url)
         if html:
+            # bePlayer('pass', '{data}') regex
             m = re.search(r"bePlayer\('([^']+)',\s*'(\{[^}]+\})'\)", html)
             if m:
-                data_match = re.search(r'"data"\s*:\s*"([^"]+)"', m.group(2))
+                pwd = m.group(1)
+                json_raw = m.group(2)
+                data_match = re.search(r'"data"\s*:\s*"([^"]+)"', json_raw)
                 if data_match:
-                    dec = decrypt_aes(data_match.group(1), m.group(1))
+                    dec = decrypt_aes(data_match.group(1), pwd)
                     if dec:
                         res = re.search(r'video_location":"([^"]+)"', dec)
                         if res: return res.group(1).replace("\\", "")
 
-    # Sibnet
+    # 2. Sibnet (Link Düzeltme)
     elif "sibnet.ru" in iframe_url:
+        # Link temizliği
         if "|" in iframe_url: iframe_url = iframe_url.split("|")[0]
-        vid = re.search(r'(?:videoid=|/video/)(\d+)', iframe_url)
+        
+        vid = None
+        if "videoid=" in iframe_url: vid = re.search(r'videoid=(\d+)', iframe_url)
+        elif "/video/" in iframe_url: vid = re.search(r'/video/(\d+)', iframe_url)
+        
         if vid:
+            # Shell yerine video sayfasına git
             real = f"https://video.sibnet.ru/video/{vid.group(1)}"
             html = await fetch_text(session, real, referer=referer_url)
             if html:
@@ -129,7 +104,7 @@ async def resolve_video(session, iframe_url, referer_url):
                     s = slug.group(1)
                     return f"https://video.sibnet.ru{s}" if s.startswith("/") else s
 
-    # Genel (M3U8)
+    # 3. Genel (M3U8/MP4 Avcısı)
     else:
         html = await fetch_text(session, iframe_url, referer=referer_url)
         if html:
@@ -140,113 +115,159 @@ async def resolve_video(session, iframe_url, referer_url):
 
     return None
 
-# --- BÖLÜM İŞLEME ---
-async def process_page(session, semaphore, url):
-    async with semaphore:
-        html = await fetch_text(session, url)
-        if not html: return
+# --- BÖLÜM İŞÇİSİ (WORKER) ---
+async def worker(worker_id, session):
+    global PROCESSED
+    while True:
+        try:
+            page_url = await URL_QUEUE.get()
+        except asyncio.QueueEmpty:
+            break
 
-        soup = BeautifulSoup(html, 'html.parser')
-        
-        # 1. Başlık ve Kategori Bilgilerini Al
-        # Başlık genellikle h1 veya title'da olur
-        # Cloudstream: h1.page-title
-        h1 = soup.select_one("h1.page-title")
-        if not h1: 
-            # Yedek başlık alımı
-            h1 = soup.select_one("title")
-            title_text = h1.text.replace("izle", "").replace("CizgiMax", "").strip() if h1 else "Bilinmeyen Dizi"
-        else:
-            title_text = h1.text.strip()
+        # Sayfayı İndir
+        html = await fetch_text(session, page_url)
+        if html:
+            soup = BeautifulSoup(html, 'html.parser')
+            
+            # 1. Başlık ve Kategori
+            h1 = soup.select_one("h1.page-title") or soup.select_one("title")
+            full_title = h1.text.strip() if h1 else "Bilinmeyen"
+            # Temizlik: "Gumball 1. Sezon 1. Bölüm izle" -> "Gumball 1. Sezon 1. Bölüm"
+            full_title = full_title.replace("izle", "").replace("ÇizgiMax", "").replace("-", "").strip()
 
-        # Dizi Adı ve Bölüm Adını Ayır
-        # Format genelde: "Dizi Adı 1. Sezon 1. Bölüm izle"
-        # Biz bunu "Dizi Adı - 1. Sezon 1. Bölüm" yapacağız
-        
-        series_title = title_text
-        episode_title = title_text
-        
-        # Kategori Al (Breadcrumb veya Etiketlerden)
-        # Cloudstream: div.genre-item a
-        genres = soup.select("div.genre-item a")
-        category = "Genel"
-        if genres:
-            # İlk geçerli kategoriyi al (Yıl olmayan)
+            # Kategori (Breadcrumb veya Etiket)
+            # Site yapısında: div.genre-item a
+            genres = soup.select("div.genre-item a")
+            category = "Genel"
             for g in genres:
-                g_text = g.text.strip()
-                if not g_text.isdigit(): 
-                    category = g_text
+                gt = g.text.strip()
+                if not gt.isdigit() and len(gt) > 2:
+                    category = gt
                     break
-
-        # 2. Poster Al
-        img = soup.select_one("img.series-profile-thumb")
-        poster = img.get("src") if img else ""
-
-        # 3. Video Linklerini Bul
-        links = soup.select("ul.linkler li a")
-        
-        # Linkleri Sırala (Sibnet > Cizgi > Diğer)
-        sorted_links = sorted(links, key=lambda x: (
-            2 if "sibnet" in str(x.get("data-frame")) else
-            1 if "cizgi" in str(x.get("data-frame")) else 0
-        ), reverse=True)
-
-        found_url = None
-        for link in sorted_links:
-            src = link.get("data-frame")
-            found_url = await resolve_video(session, src, url)
-            if found_url: break
-        
-        if found_url:
-            # M3U Formatına Uygun Başlık Düzenleme
-            # "Gumball 1. Sezon 5. Bölüm" -> Group: Gumball, Title: 1. Sezon 5. Bölüm
-            # Ancak HTML player için "Dizi Adı - Bölüm" formatı en iyisidir.
             
-            # Basit bir temizlik
-            clean_title = title_text.replace("izle", "").strip()
+            # Poster
+            img = soup.select_one("img.series-profile-thumb")
+            poster = img.get("src") if img else ""
+
+            # 2. Video Linkleri
+            links = soup.select("ul.linkler li a")
             
-            FINAL_PLAYLIST.append({
-                "group": category,
-                "title": clean_title,
-                "logo": poster,
-                "url": found_url
-            })
-            print(f"  [+] {clean_title}", flush=True)
-        # else: print(f"  [-] Kaynak Yok: {title_text}", flush=True)
+            # Sıralama: Sibnet > Cizgi > Diğer
+            sorted_links = sorted(links, key=lambda x: (
+                2 if "sibnet" in str(x.get("data-frame")) else
+                1 if "cizgi" in str(x.get("data-frame")) else 0
+            ), reverse=True)
+
+            found_url = None
+            for link in sorted_links:
+                src = link.get("data-frame")
+                found_url = await resolve_video(session, src, page_url)
+                if found_url: break
+            
+            if found_url:
+                FINAL_PLAYLIST.append({
+                    "group": category,
+                    "title": full_title,
+                    "logo": poster,
+                    "url": found_url
+                })
+                
+        PROCESSED += 1
+        if PROCESSED % 50 == 0:
+            print(f"İlerleme: {PROCESSED}/{TOTAL_URLS} tamamlandı...", flush=True)
+        
+        URL_QUEUE.task_done()
+
+# --- SITEMAP TARAYICI ---
+async def load_sitemaps(session):
+    global TOTAL_URLS
+    print("Sitemap İndiriliyor...", flush=True)
+    
+    # Ana Index
+    index_xml = await fetch_text(session, SITEMAP_INDEX)
+    if not index_xml:
+        print("!!! Sitemap ana dizini çekilemedi. IP Ban olabilir.", flush=True)
+        return False
+
+    # XML Namespace temizliği
+    index_xml = re.sub(r' xmlns="[^"]+"', '', index_xml, count=1)
+    try:
+        root = ET.fromstring(index_xml)
+    except:
+        print("!!! Sitemap XML formatı bozuk.", flush=True)
+        return False
+
+    target_sitemaps = []
+    
+    # Alt sitemapleri bul (post-sitemap veya diziler-sitemap)
+    for sitemap in root.findall("sitemap"):
+        loc = sitemap.find("loc").text
+        if "post-sitemap" in loc or "diziler-sitemap" in loc:
+            target_sitemaps.append(loc)
+    
+    # Limit koy (En güncel X sitemap)
+    # Site haritası genelde eskiden yeniye sıralıdır, o yüzden listeyi ters çevirip ilk X taneyi alalım.
+    # CizgiMax'te post-sitemap.xml (numarasız) en güncelidir, sonra 2, 3...
+    # O yüzden sıralama zaten genelde doğrudur ama kontrol etmekte fayda var.
+    
+    # Sitemaps'i al ve işle
+    # Sadece ilk 'SITEMAP_LIMIT' kadarını al (Zaman kısıtlaması için)
+    selected_sitemaps = target_sitemaps[:SITEMAP_LIMIT]
+    print(f"Hedeflenen Sitemap Sayısı: {len(selected_sitemaps)} (Toplam: {len(target_sitemaps)})", flush=True)
+
+    for sub_url in selected_sitemaps:
+        print(f" > Linkler toplanıyor: {sub_url}", flush=True)
+        sub_xml = await fetch_text(session, sub_url)
+        if not sub_xml: continue
+        
+        try:
+            sub_xml = re.sub(r' xmlns="[^"]+"', '', sub_xml, count=1)
+            sub_root = ET.fromstring(sub_xml)
+            
+            count = 0
+            for url_tag in sub_root.findall("url"):
+                loc = url_tag.find("loc").text
+                # Sadece izleme sayfaları
+                if "-izle" in loc or "bolum" in loc:
+                    URL_QUEUE.put_nowait(loc)
+                    count += 1
+            TOTAL_URLS += count
+        except: pass
+        
+    print(f"Toplam {TOTAL_URLS} adet bölüm linki kuyruğa eklendi.", flush=True)
+    return True
 
 async def main():
-    print("Sitemap Tabanlı CizgiMax Botu Başlatılıyor...", flush=True)
+    print("CizgiMax Hibrit Bot (Sitemap + AES) Başlatılıyor...", flush=True)
     start_time = time.time()
     
-    semaphore = asyncio.Semaphore(CONCURRENT_LIMIT)
-    
+    # Tek Oturum (Cookie Korumalı)
     async with AsyncSession(impersonate="chrome120") as session:
-        # 1. Sitemap'ten tüm linkleri bul
-        await parse_sitemap(session)
         
-        if not URL_QUEUE:
-            print("Hiç link bulunamadı! Program sonlandırılıyor.", flush=True)
+        # 1. Aşama: Linkleri Topla
+        success = await load_sitemaps(session)
+        
+        if not success or TOTAL_URLS == 0:
+            print("Sitemap başarısız, Kategori Moduna geçiliyor...", flush=True)
+            # Burada yedek kategori tarama kodu çalışabilir ama şimdilik sitemap'e odaklanalım.
             return
 
-        print(f"İşlem Başlıyor: {len(URL_QUEUE)} adet sayfa taranacak...", flush=True)
+        # 2. Aşama: İşçileri Başlat (Worker Pool)
+        print(f"{CONCURRENT_LIMIT} İşçi başlatılıyor...", flush=True)
+        workers = []
+        for i in range(CONCURRENT_LIMIT):
+            workers.append(asyncio.create_task(worker(i, session)))
         
-        # 2. Linkleri İşle (Task Havuzu)
-        tasks = []
-        for url in URL_QUEUE:
-            tasks.append(process_page(session, semaphore, url))
+        # Kuyruğun bitmesini bekle
+        await URL_QUEUE.join()
         
-        # Parçalı işlem (Her seferinde 500 görev, RAM şişmesini önlemek için)
-        chunk_size = 500
-        total_tasks = len(tasks)
-        
-        for i in range(0, total_tasks, chunk_size):
-            chunk = tasks[i:i + chunk_size]
-            print(f" >> Paket İşleniyor: {i} - {i + len(chunk)} / {total_tasks}", flush=True)
-            await asyncio.gather(*chunk)
-            
-    print(f"\nToplam {len(FINAL_PLAYLIST)} içerik bulundu. Kaydediliyor...", flush=True)
+        # İşçileri durdur
+        for w in workers: w.cancel()
     
-    # Sıralama: Kategori -> İsim
+    # 3. Aşama: Kaydet
+    print(f"\nToplam {len(FINAL_PLAYLIST)} içerik bulundu. M3U yazılıyor...", flush=True)
+    
+    # HTML Player için Gruplama/Sıralama
     FINAL_PLAYLIST.sort(key=lambda x: (x["group"], x["title"]))
     
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
@@ -255,7 +276,7 @@ async def main():
             f.write(f'#EXTINF:-1 group-title="{item["group"]}" tvg-logo="{item["logo"]}", {item["title"]}\n')
             f.write(f'{item["url"]}\n')
 
-    print(f"Tamamlandı! Süre: {time.time() - start_time:.2f}sn")
+    print(f"İşlem Tamamlandı! Süre: {time.time() - start_time:.2f}sn")
 
 if __name__ == "__main__":
     if sys.platform == 'win32':
