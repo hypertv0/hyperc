@@ -4,13 +4,19 @@ import re
 import time
 import random
 import concurrent.futures
+import sys
+import urllib.parse
 
 # --- AYARLAR ---
-MAX_WORKERS = 5   # Aynı anda kaç link kontrol edilsin? (Çok artırma ban yersin)
-MAX_PAGES = 30    # Her kategori için kaç sayfa taransın? (İdeal: 20-50 arası)
-RETRY_COUNT = 3   # Başarısız olursa kaç kez denesin?
+MAX_WORKERS = 5      # Aynı anda taranacak video sayısı
+MAX_PAGES = 50       # Her kategori için güvenlik sınırı
+RETRY_COUNT = 3      # Hata durumunda deneme sayısı
 
-# CloudScraper: Cloudflare korumasını aşmak için gerekli
+# Çıktıların anlık görünmesi için print fonksiyonunu özelleştiriyoruz
+def log(message):
+    print(message, flush=True)
+
+# CloudScraper Ayarları (Anti-Bot Koruması İçin)
 scraper = cloudscraper.create_scraper(
     browser={
         'browser': 'chrome',
@@ -19,8 +25,15 @@ scraper = cloudscraper.create_scraper(
     }
 )
 
+# Header ayarları (Infinite Scroll taklidi)
+scraper.headers.update({
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "Referer": "https://google.com",
+    "X-Requested-With": "XMLHttpRequest" # Bu satır sitenin bizi AJAX isteği sanmasını sağlar
+})
+
 def get_current_domain():
-    """GitHub'dan güncel domaini çeker."""
     try:
         url = "https://raw.githubusercontent.com/Kraptor123/domainListesi/refs/heads/main/eklenti_domainleri.txt"
         response = scraper.get(url).text
@@ -29,29 +42,25 @@ def get_current_domain():
                 domain = line.split(":")[-1].strip()
                 if not domain.startswith("http"):
                     domain = "https://" + domain
-                print(f"[+] Güncel Domain: {domain}")
+                log(f"[+] Güncel Domain Bulundu: {domain}")
                 return domain
-    except Exception as e:
-        print(f"[-] Domain çekilemedi: {e}")
-    return "https://dizipal1217.com" # Yedek
+    except:
+        pass
+    return "https://dizipal1217.com"
 
 BASE_URL = get_current_domain()
 
 def get_video_source(url):
-    """
-    Verilen URL'deki m3u8 linkini bulur.
-    Eğer dizi sayfasıysa, son bölüme gider.
-    """
+    """Linkin içindeki video kaynağını bulur, gerekirse dizi içine girer."""
     for _ in range(RETRY_COUNT):
         try:
             time.sleep(random.uniform(0.1, 0.5))
             res = scraper.get(url)
-            
             if res.status_code != 200: return None
+            
             soup = BeautifulSoup(res.text, 'html.parser')
 
-            # --- SENARYO 1: Video Sayfası ---
-            # Smali kodundaki mantık: .series-player-container iframe veya div#vast_new iframe
+            # 1. Direkt Video Var mı?
             iframe = soup.select_one('.series-player-container iframe') or \
                      soup.select_one('div#vast_new iframe') or \
                      soup.select_one('iframe[src*="player"]')
@@ -60,47 +69,39 @@ def get_video_source(url):
                 src = iframe.get('src')
                 if src:
                     if src.startswith("//"): src = "https:" + src
-                    # Iframe içine gir
+                    # Iframe içine girip m3u8 ara
                     iframe_res = scraper.get(src, headers={"Referer": BASE_URL})
-                    # Regex ile file:"..." veya dosya:"..." ara
                     match = re.search(r'(?:file|source)\s*:\s*"([^"]+)"', iframe_res.text)
                     if match:
                         return match.group(1)
 
-            # --- SENARYO 2: Dizi Ana Sayfası (Bölüm Listesi) ---
-            # Eğer video yoksa, burası bir dizi sayfasıdır. Son bölümü bulup içine girelim.
+            # 2. Dizi Sayfası mı? (Bölüm Listesi)
             episodes = soup.select('div.episode-item a') or \
                        soup.select('.episodes-list a') or \
                        soup.select('ul.episodes li a')
             
             if episodes:
-                # Genellikle listenin başındaki veya sonundaki en günceldir.
-                # Biz ilkini (üsttekini) alalım.
+                # İlk bölümü (genelde son eklenen) al
                 first_ep = episodes[0].get('href')
                 if not first_ep.startswith("http"):
                     first_ep = BASE_URL + first_ep
                 
-                # Sonsuz döngüye girmesin diye link farklı mı kontrol et
                 if first_ep != url:
-                    return get_video_source(first_ep) # Recursive çağrı
+                    return get_video_source(first_ep)
 
             return None # Bulunamadı
 
-        except Exception as e:
+        except:
             time.sleep(1)
             continue
     return None
 
 def process_single_content(item, category_name):
-    """Tek bir içerik kartını işler."""
+    """Tek bir içerik kartını işler ve log basar."""
     try:
-        # Kotlin kodundaki ve olası yedek seçiciler
         # Başlık
-        title_tag = item.select_one('.title') or \
-                    item.select_one('h5') or \
-                    item.select_one('.name') or \
-                    item.select_one('h2') or \
-                    item.select_one('a[title]')
+        title_tag = item.select_one('.title') or item.select_one('h5') or \
+                    item.select_one('.name') or item.select_one('a[title]')
         
         # Link
         link_tag = item.select_one('a')
@@ -114,16 +115,19 @@ def process_single_content(item, category_name):
         title = title_tag.text.strip()
         if not title and link_tag.has_attr('title'):
             title = link_tag['title']
-
+            
         link = link_tag.get('href')
         poster = img_tag.get('src') if img_tag else ""
+        
         if poster and not poster.startswith("http"):
             poster = BASE_URL + poster
-
+        
         if not link.startswith("http"):
             link = BASE_URL + link
 
-        # Videoyu bul
+        # Loglama (Hangi içeriğe baktığını gör)
+        # log(f"      Kontrol ediliyor: {title}...") 
+
         stream_url = get_video_source(link)
         
         if stream_url:
@@ -132,79 +136,112 @@ def process_single_content(item, category_name):
             m3u += f'#EXTHTTP:{{"Referer": "{BASE_URL}/"}}\n'
             m3u += f'{stream_url}\n'
             return m3u
-
+            
     except Exception:
-        return None
+        pass
     return None
 
-def scrape_category(path, category_name):
-    print(f"\n🚀 KATEGORİ: {category_name}")
+def find_next_page(soup, current_url, current_page):
+    """
+    HTML içinden bir sonraki sayfa linkini bulmaya çalışır.
+    Bulamazsa '?page=X' mantığını dener.
+    """
+    # 1. HTML içindeki 'Next' butonuna bak
+    next_a = soup.select_one('a.next') or \
+             soup.select_one('a.page-link[rel="next"]') or \
+             soup.select_one('li.next a') or \
+             soup.select_one('a.next-page')
+
+    if next_a:
+        href = next_a.get('href')
+        if href and href != "#":
+            if not href.startswith("http"):
+                return BASE_URL + href
+            return href
+
+    # 2. Buton yoksa URL yapısını değiştirerek dene (Fallback)
+    # Eğer URL'de /page/2/ yapısı yoksa, ?page=2 yapısını dene.
+    if "/page/" not in current_url:
+        parsed = urllib.parse.urlparse(current_url)
+        query = dict(urllib.parse.parse_qsl(parsed.query))
+        query['page'] = current_page + 1
+        new_query = urllib.parse.urlencode(query)
+        new_url = urllib.parse.urlunparse(parsed._replace(query=new_query))
+        return new_url
+    
+    # URL zaten /page/X/ formatındaysa ve buton bulunamadıysa muhtemelen sayfa bitmiştir.
+    return None
+
+def scrape_category(start_path, category_name):
+    log(f"\n🚀 KATEGORİ BAŞLIYOR: {category_name}")
     entries = []
     
     page = 1
+    current_url = f"{BASE_URL}{start_path}"
+    
     while page <= MAX_PAGES:
-        # URL Oluşturma: DiziPal genelde /page/2/ yapısını kullanır.
-        if page == 1:
-            target_url = f"{BASE_URL}{path}"
-        else:
-            # Standart WordPress/DiziPal sayfalama yapısı
-            target_url = f"{BASE_URL}{path}/page/{page}/"
-
-        print(f"   📄 Sayfa {page} taranıyor... [{target_url}]")
+        log(f"   📄 Sayfa {page} taranıyor... [{current_url}]")
         
         try:
-            res = scraper.get(target_url)
+            res = scraper.get(current_url, timeout=15)
             
-            # Sayfa yoksa (404) veya anasayfaya yönlendiriyorsa dur.
-            if res.status_code == 404 or res.url.rstrip('/') == BASE_URL.rstrip('/'):
-                print("   🛑 Sayfa sonuna gelindi.")
+            if res.status_code == 404:
+                log("   🛑 Sayfa bulunamadı (404). Kategori bitti.")
                 break
                 
             soup = BeautifulSoup(res.text, 'html.parser')
             
-            # Seçiciler (Kotlin kodundan + Genişletilmiş)
-            # div.episode-item -> Kotlin'de 'son-bolumler' için
-            # article.type2 ul li -> Kotlin'de diğerleri için
-            # .item, .movie-item -> Yedekler
+            # İçerik seçicileri
             items = soup.select('div.episode-item') + \
                     soup.select('article.type2 ul li') + \
                     soup.select('article.type2 li') + \
                     soup.select('.item') + \
                     soup.select('.movie-item')
             
-            # HTML içinden 'a' etiketi olmayanları temizle
+            # Filtreleme (Link içerenler)
             items = [i for i in items if i.select_one('a')]
             
             if not items:
-                print("   ⚠️ İçerik bulunamadı (Cloudflare engeli olabilir veya liste bitti).")
-                # Eğer ilk sayfada bile bulamadıysa, bir sorun var demektir ama döngüyü kıralım.
+                log("   ⚠️ İçerik listesi boş. Kategori bitti.")
                 break
 
-            # Paralel İşleme
-            current_page_entries = []
+            # Paralel Tarama
+            found_on_page = 0
             with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
                 futures = [executor.submit(process_single_content, item, category_name) for item in items]
                 for future in concurrent.futures.as_completed(futures):
                     result = future.result()
                     if result:
-                        current_page_entries.append(result)
+                        entries.append(result)
+                        found_on_page += 1
+                        # Anlık ilerleme göstermek için nokta koy
+                        print(".", end="", flush=True)
             
-            if current_page_entries:
-                entries.extend(current_page_entries)
-                print(f"   ✅ {len(current_page_entries)} link eklendi.")
+            print("") # Satır sonu
+            
+            if found_on_page > 0:
+                log(f"   ✅ Bu sayfadan {found_on_page} link eklendi.")
             else:
-                print("   ❌ Bu sayfadan video linki çıkarılamadı.")
+                log("   ❌ Bu sayfadan link çıkarılamadı.")
 
+            # Sonraki sayfayı bul
+            next_url = find_next_page(soup, current_url, page)
+            
+            if not next_url or next_url == current_url:
+                log("   🏁 Sonraki sayfa bulunamadı. Kategori tamamlandı.")
+                break
+                
+            current_url = next_url
             page += 1
             
         except Exception as e:
-            print(f"   🔥 Hata: {e}")
+            log(f"   🔥 Kritik Hata: {e}")
             break
             
     return entries
 
 def main():
-    # Eklenti Kodundaki Kategoriler (DiziPal.kt Satır 46-63)
+    # Kategoriler
     categories = [
         ("/diziler/son-bolumler", "Son Bölümler"),
         ("/filmler", "Filmler"),
@@ -214,28 +251,4 @@ def main():
         ("/koleksiyon/blutv", "BluTV"),
         ("/koleksiyon/disney", "Disney+"),
         ("/koleksiyon/amazon-prime", "Amazon Prime"),
-        ("/koleksiyon/tod-bein", "TOD (beIN)"), # Bunu da ekledim kodda vardı
-        ("/koleksiyon/gain", "Gain"),
-        ("/tur/mubi", "Mubi")
-    ]
-    
-    # M3U Dosyasını Başlat
-    with open("dizipal.m3u", "w", encoding="utf-8") as f:
-        f.write("#EXTM3U\n")
-    
-    total_links = 0
-    
-    for path, name in categories:
-        cat_data = scrape_category(path, name)
-        if cat_data:
-            with open("dizipal.m3u", "a", encoding="utf-8") as f:
-                f.writelines(cat_data)
-            total_links += len(cat_data)
-            print(f"💾 {name} kaydedildi. (Şu ana kadar toplam: {total_links})")
-        
-        time.sleep(2) # Kategori arası bekleme
-
-    print(f"\n🎉 İŞLEM TAMAMLANDI! Toplam {total_links} içerik 'dizipal.m3u' dosyasına yazıldı.")
-
-if __name__ == "__main__":
-    main()
+        ("/koleksiyon/gain",
