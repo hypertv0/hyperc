@@ -1,17 +1,14 @@
-name: DiziPal M3U Güncelleyici (Full)
+name: DiziPal Full Scraper
 
 on:
   schedule:
-    - cron: '0 2 * * *' # Türkiye saati ile sabah 05:00 civarı (Sitenin sakin olduğu zaman)
+    - cron: '0 3 * * *' # Gece 03:00'da çalışır
   workflow_dispatch:
-
-permissions:
-  contents: write
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 350 # 6 saate yakın zaman tanır
+    timeout-minutes: 360 # 6 Saat zaman aşımı
 
     steps:
       - name: Repoyu Çek
@@ -23,16 +20,15 @@ jobs:
           python-version: '3.9'
 
       - name: Kütüphaneleri Yükle
-        run: |
-          pip install requests beautifulsoup4
+        run: pip install requests beautifulsoup4
 
-      - name: Scraper'ı Çalıştır
+      - name: Scraper Başlat
         run: python dizipal_scraper.py
 
-      - name: Dosyayı Commit ve Push Yap
+      - name: Kaydet ve Gönder
         run: |
           git config --global user.name 'GitHub Action'
           git config --global user.email 'action@github.com'
           git add dizipal.m3u
-          git commit -m "Full Arşiv Güncellemesi - $(date +'%Y-%m-%d')" || echo "Değişiklik yok"
+          git commit -m "Auto Update: $(date)" || echo "Değişiklik yok"
           git push
