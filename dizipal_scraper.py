@@ -4,18 +4,19 @@ import re
 import concurrent.futures
 import time
 import random
-from urllib.parse import urljoin
+import json
 
 # --- AYARLAR ---
-MAX_WORKERS = 5   # Dizi içlerine gireceği için worker sayısını düşük tutalım, ban yemeyelim.
-MAX_PAGES_PER_CATEGORY = 50 # Her kategori için taranacak maksimum sayfa (Çok artırma, süre yetmez)
+MAX_WORKERS = 5
+MAX_PAGES_PER_CATEGORY = 50 # Her kategori için maksimum kaç sayfa taranacak?
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
 
 session = requests.Session()
 session.headers.update({
     "User-Agent": USER_AGENT,
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-    "Referer": "https://google.com"
+    "Referer": "https://google.com",
+    "X-Requested-With": "XMLHttpRequest" # Infinite Scroll taklidi için kritik
 })
 
 def get_current_domain():
@@ -31,22 +32,21 @@ def get_current_domain():
                 return domain
     except:
         pass
-    return "https://dizipal1217.com" # Fallback
+    return "https://dizipal1217.com"
 
 BASE_URL = get_current_domain()
 
 def get_real_stream_url(page_url):
-    """
-    Verilen sayfa linkine gider ve video (m3u8) linkini bulur.
-    Eğer bu bir dizi sayfasıysa, son bölümü bulup oraya gider.
-    """
+    """Linkin içindeki video kaynağını (m3u8) bulur. Dizi ise son bölüme gider."""
     try:
-        time.sleep(random.uniform(0.1, 0.5)) # Nezaket beklemesi
+        # Rastgele bekleme (IP ban yememek için)
+        time.sleep(random.uniform(0.1, 0.4))
+        
         res = session.get(page_url, timeout=10)
         if res.status_code != 200: return None
         soup = BeautifulSoup(res.text, 'html.parser')
 
-        # 1. Senaryo: Sayfada direkt video var mı? (Film veya Bölüm Sayfası)
+        # 1. Direkt video var mı?
         iframe = soup.select_one('.series-player-container iframe') or soup.select_one('div#vast_new iframe')
         if iframe:
             src = iframe.get('src')
@@ -57,19 +57,14 @@ def get_real_stream_url(page_url):
                 if match:
                     return match.group(1)
         
-        # 2. Senaryo: Video yok, burası bir Dizi Tanıtım Sayfası mı?
-        # Bölümleri bulalım.
-        episodes = soup.select('div.episode-item a') or soup.select('.episodes-list a')
+        # 2. Video yoksa burası bir dizi sayfası olabilir, son bölüme git.
+        episodes = soup.select('div.episode-item a') or soup.select('.episodes-list a') or soup.select('.episodes a')
         if episodes:
-            # Genellikle en üstteki veya listedeki son bölüm en günceldir.
-            # DiziPal yapısında genelde son eklenenler üstte olur ya da sezon listesi vardır.
-            # İlk bulduğumuz bölüm linkine gidelim (Son Bölüm mantığı)
             first_ep_link = episodes[0].get('href')
             if not first_ep_link.startswith("http"):
                 first_ep_link = BASE_URL + first_ep_link
             
-            # Recursive (Kendini tekrar çağırma): Bölüm sayfasına git ve oradan video çek
-            # Sonsuz döngüye girmemesi için URL kontrolü yapılabilir ama basit tutuyoruz.
+            # Sonsuz döngü koruması: Eğer link aynı sayfaya çıkmıyorsa git
             if first_ep_link != page_url:
                 return get_real_stream_url(first_ep_link)
 
@@ -78,21 +73,33 @@ def get_real_stream_url(page_url):
     return None
 
 def process_item(item, category_name):
+    """Bulunan içeriği işler ve m3u formatına çevirir."""
     try:
-        title_tag = item.select_one('.title') or item.select_one('h5') or item.select_one('.name')
-        link_tag = item.select_one('a')
-        img_tag = item.select_one('img')
+        # HTML Element ise
+        if hasattr(item, 'select_one'):
+            title_tag = item.select_one('.title') or item.select_one('h5') or item.select_one('.name')
+            link_tag = item.select_one('a')
+            img_tag = item.select_one('img')
+            
+            if not title_tag or not link_tag: return None
+            
+            title = title_tag.text.strip()
+            link = link_tag.get('href')
+            poster = img_tag.get('src') if img_tag else ""
         
-        if not title_tag or not link_tag: return None
-        
-        title = title_tag.text.strip()
-        link = link_tag.get('href')
-        poster = img_tag.get('src') if img_tag else ""
+        # JSON objesi ise (API'den gelirse)
+        elif isinstance(item, dict):
+            title = item.get('title', 'Bilinmeyen İçerik')
+            link = item.get('url') or item.get('permalink')
+            poster = item.get('poster') or item.get('thumbnail') or ""
+        else:
+            return None
+
+        if not link: return None
         
         if not link.startswith("http"):
             link = BASE_URL + link
 
-        # İçeriğin gerçek yayın linkini bul (Gerekirse dizi içine girer)
         stream_url = get_real_stream_url(link)
         
         if stream_url:
@@ -105,50 +112,67 @@ def process_item(item, category_name):
         pass
     return None
 
-def get_next_page_link(soup):
-    """HTML içinden 'Sonraki Sayfa' linkini bulur."""
-    # Sitenin yapısına göre 'Next', 'ileri', 'fa-angle-right' veya pagination class'larını arar.
-    next_a = soup.select_one('a.next') or soup.select_one('a.page-link[rel="next"]') or soup.select_one('li.next a')
-    
-    if next_a:
-        href = next_a.get('href')
-        if href and href != "#":
-            if not href.startswith("http"):
-                return BASE_URL + href
-            return href
-    return None
-
 def scrape_category(start_path, category_name):
     print(f"\n🚀 KATEGORİ: {category_name}")
     entries = []
     
-    current_url = f"{BASE_URL}{start_path}"
     page_count = 1
+    current_base_url = f"{BASE_URL}{start_path}"
     
-    while current_url and page_count <= MAX_PAGES_PER_CATEGORY:
-        print(f"   📄 Sayfa {page_count} taranıyor... [{current_url}]")
+    while page_count <= MAX_PAGES_PER_CATEGORY:
+        # --- Sayfalama Mantığı (Infinite Scroll için ?page=X yapısı) ---
+        if page_count == 1:
+            target_url = current_base_url
+        else:
+            if "?" in current_base_url:
+                target_url = f"{current_base_url}&page={page_count}"
+            else:
+                target_url = f"{current_base_url}?page={page_count}"
+        
+        print(f"   📄 Sayfa {page_count} taranıyor... [{target_url}]")
         
         try:
-            res = session.get(current_url, timeout=15)
-            if res.status_code != 200:
-                print("   🛑 Erişim hatası.")
-                break
-                
-            soup = BeautifulSoup(res.text, 'html.parser')
+            res = session.get(target_url, timeout=15)
             
-            # İçerik kartlarını bul
-            items = soup.select('div.episode-item') + soup.select('article.type2 ul li') + soup.select('.item')
-            # Gereksiz/yanlış elementleri temizle (Varsa)
-            items = [i for i in items if i.select_one('a')]
-            
-            if not items:
-                print("   ⚠️ Bu sayfada içerik bulunamadı.")
+            # Eğer anasayfaya atarsa kategori bitmiştir
+            if res.url == BASE_URL or res.status_code == 404:
+                print("   🛑 Sayfa sonuna gelindi.")
                 break
-                
-            # Linkleri işle
+            
+            # İçerik JSON mu HTML mi kontrol et
+            items = []
+            try:
+                # Bazı sayfalar JSON dönebilir
+                json_data = res.json()
+                if 'html' in json_data:
+                    # JSON içinde HTML dönüyorsa
+                    soup = BeautifulSoup(json_data['html'], 'html.parser')
+                    items = soup.select('div.episode-item') + soup.select('article.type2 ul li') + soup.select('.item')
+                elif isinstance(json_data, list):
+                    items = json_data
+                elif 'items' in json_data:
+                    items = json_data['items']
+            except:
+                # JSON değilse Standart HTML parse et
+                soup = BeautifulSoup(res.text, 'html.parser')
+                items = soup.select('div.episode-item') + soup.select('article.type2 ul li') + soup.select('.item')
+            
+            # Gereksiz elemanları temizle (Sadece linki olanlar)
+            valid_items = []
+            for i in items:
+                if hasattr(i, 'select_one') and i.select_one('a'):
+                    valid_items.append(i)
+                elif isinstance(i, dict) and ('url' in i or 'permalink' in i):
+                    valid_items.append(i)
+            
+            if not valid_items:
+                print("   ⚠️ Bu sayfada içerik bulunamadı (Liste boş).")
+                break
+            
+            # Paralel İşleme
             page_entries = []
             with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-                futures = [executor.submit(process_item, item, category_name) for item in items]
+                futures = [executor.submit(process_item, item, category_name) for item in valid_items]
                 for future in concurrent.futures.as_completed(futures):
                     result = future.result()
                     if result:
@@ -158,24 +182,8 @@ def scrape_category(start_path, category_name):
                 entries.extend(page_entries)
                 print(f"   ✅ {len(page_entries)} içerik eklendi.")
             else:
-                print("   ❌ İçerik var ama video linki çıkarılamadı.")
+                print("   ❌ İçerikler tarandı ama video linki çıkarılamadı.")
 
-            # Sonraki sayfayı bul
-            next_url = get_next_page_link(soup)
-            
-            # Eğer next linki yoksa, manuel url tahmin etmeyi dene (Fallback)
-            if not next_url:
-                # /page/1 -> /page/2 mantığı
-                if "/page/" in current_url:
-                    current_page_num = int(re.search(r'/page/(\d+)', current_url).group(1))
-                    next_url = re.sub(r'/page/\d+', f'/page/{current_page_num + 1}', current_url)
-                elif page_count == 1:
-                    # İlk sayfa, sonuna /page/2 ekle
-                    next_url = f"{current_url}/page/2" if current_url.endswith('/') else f"{current_url}/page/2"
-                
-                # Oluşturulan linkin geçerli olup olmadığını bir sonraki döngüde anlayacağız
-            
-            current_url = next_url
             page_count += 1
             
         except Exception as e:
@@ -185,10 +193,11 @@ def scrape_category(start_path, category_name):
     return entries
 
 def main():
+    # Kategori Listesi
     categories = [
         ("/diziler/son-bolumler", "Son Bölümler"),
         ("/filmler", "Filmler"),
-        ("/diziler", "Diziler"), # Artık dizi içlerine girecek
+        ("/diziler", "Diziler"),
         ("/koleksiyon/netflix", "Netflix"),
         ("/koleksiyon/exxen", "Exxen"),
         ("/koleksiyon/blutv", "BluTV"),
@@ -208,9 +217,12 @@ def main():
             with open("dizipal.m3u", "a", encoding="utf-8") as f:
                 f.writelines(cat_data)
             total += len(cat_data)
-            print(f"💾 {name} tamamlandı. Toplam: {total}")
+            print(f"💾 {name} tamamlandı. (Kategori Toplamı: {len(cat_data)})")
+        
+        # Kategori geçişinde bekleme
+        time.sleep(2)
             
-    print(f"\n🎉 BİTTİ! Toplam {total} link.")
+    print(f"\n🎉 BİTTİ! Toplam {total} link 'dizipal.m3u' dosyasına yazıldı.")
 
 if __name__ == "__main__":
     main()
