@@ -1,161 +1,277 @@
 #EXTM3U
-#EXTINF:-1 group-title="Yeni Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/fqYqg3DffPyZ5mfma8TEIWdzMoo.jpg", Bölük Pörçük: Bir Tuncel Kurtiz Biyografisi
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/kppp3NeLGerYE5GFLRitUwlzChh.jpg", FER
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://ak1m.uk-traffic-076.com/hls2/02/00027/,t0wi0o0zahss_n,.urlset/master.m3u8?t=ZpHQq99AHZO6C6esSVvA5oobUjWW5RSr6_trFhKLG8w&s=1765403527&e=43200&f=138125&srv=x1&i=0.0&sp=5000&fr=t0wi0o0zahss&p1=ak1m&p2=ak1m
-#EXTINF:-1 group-title="Yeni Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/jbFEESMVbpJU8IjZBjiWGJdEsxR.jpg", Eden
+https://ka5m.uk-traffic-076.com/hls2/02/00028/,70e9j8icm6ym_n,.urlset/master.m3u8?t=TDc0Tc9t1DQWjcVMOgH-dwrUGdl3aqHLQ0QAI6cTKpk&s=1765403828&e=43200&f=141684&srv=x2&i=0.0&sp=5000&fr=70e9j8icm6ym&p1=ka5m&p2=ka5m
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500//33JCvzBPl8N2XrWwc4fqOMRBTfP.jpg", Konuşanlar
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://kde2.uk-traffic-076.com/hls2/01/00027/,2e5oi7qf8sra_n,.urlset/master.m3u8?t=_w8dyveTKPDUefBtrLES_VTp4zTdPZ9euqCj992wdGI&s=1765403527&e=43200&f=138101&srv=x2&i=0.0&sp=5000&fr=2e5oi7qf8sra&p1=kde2&p2=kde2
-#EXTINF:-1 group-title="Yeni Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/z53D72EAOxGRqdr7KXXWp9dJiDe.jpg", Mission: Impossible - The Final Reckoning
+https://hd1d.uk-traffic-076.com/hls2/02/00028/,okgc3253xkai_n,.urlset/master.m3u8?t=IRVoWypRTHqPblcIEgsMYyQXRZJEdxx2h3GdBWJpo-E&s=1765403828&e=43200&f=141682&srv=x1&i=0.0&sp=5000&fr=okgc3253xkai&p1=hd1d&p2=hd1d
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/6kLHb8RIxJrKaawzp4Sm0cy4jaY.jpg", Karma 2025
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://xn2m.uk-traffic-076.com/hls2/02/00027/,hzte74cdpgz9_n,.urlset/master.m3u8?t=rc43HrZPix2nqnAyg_rAzlHW8dylcmsqCn5hRqeA1aQ&s=1765403527&e=43200&f=138036&srv=x1&i=0.0&sp=5000&fr=hzte74cdpgz9&p1=xn2m&p2=xn2m
-#EXTINF:-1 group-title="Yeni Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/lo5mfglsGeMYmAkSRXs9DATNJxk.jpg", Freaky Tales
+https://ak21.uk-traffic-076.com/hls2/02/00027/,bcbtcelitvuw_n,.urlset/master.m3u8?t=zRI293nA7f53VOxtwXZwI-lKEPJk2cMJm5IsJbOM1SU&s=1765403828&e=43200&f=139879&srv=x2&i=0.0&sp=5000&fr=bcbtcelitvuw&p1=ak21&p2=ak21
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/6kLHb8RIxJrKaawzp4Sm0cy4jaY.jpg", Karma 2025
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://xn2m.uk-traffic-076.com/hls2/02/00027/,5rel0lk7yxbo_n,.urlset/master.m3u8?t=UDDV-2Pnf_eV6E8x64tZ_SdnIQAJCGW-tf-by8FLepk&s=1765403528&e=43200&f=138038&srv=x1&i=0.0&sp=5000&fr=5rel0lk7yxbo&p1=xn2m&p2=xn2m
-#EXTINF:-1 group-title="Yeni Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/yiXpXNiBWENaSJmdKfoT5DU0bL4.jpg", Ballad of a Small Player
+https://o23m.uk-traffic-076.com/hls2/02/00028/,pjct7zb7ml5v_n,.urlset/master.m3u8?t=rmDQWWalKPtLTJada22K2RlNRApS9BKf_OYM85IRqVM&s=1765403828&e=43200&f=141674&srv=x2&i=0.0&sp=5000&fr=pjct7zb7ml5v&p1=o23m&p2=o23m
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/2pi53UfC61zRYDU7BOlNoEG3myo.jpg", Sekizinci Aile
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://h2m1.uk-traffic-076.com/hls2/02/00027/,vif58cgsv9p5_n,.urlset/master.m3u8?t=VXfnKQdVYOr6HoFp-iu2peY4B8_RQ1FKYtTYxCTeR9g&s=1765403528&e=43200&f=138102&srv=x1&i=0.0&sp=5000&fr=vif58cgsv9p5&p1=h2m1&p2=h2m1
-#EXTINF:-1 group-title="Yeni Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/9Mg9q8hsv7aaUspAW2taRHXNkmC.jpg", Dehşet Bey
+https://z01k.uk-traffic-076.com/hls2/02/00027/,g2nvfgp8qy45_n,.urlset/master.m3u8?t=H0-BWuu3BXLyS1t8EQWMDLMmtqLyDrDQNdQ-1UcncCU&s=1765403828&e=43200&f=139883&srv=x2&i=0.0&sp=5000&fr=g2nvfgp8qy45&p1=z01k&p2=z01k
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/kppp3NeLGerYE5GFLRitUwlzChh.jpg", FER
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://ka5m.uk-traffic-076.com/hls2/01/00027/,ljj92hpqfd68_n,.urlset/master.m3u8?t=aE4fKU-YK3T6sBzN9nDt3qVVo-B8ufT_z_ZFVrYmVWs&s=1765403529&e=43200&f=138088&srv=x1&i=0.0&sp=5000&fr=ljj92hpqfd68&p1=ka5m&p2=ka5m
-#EXTINF:-1 group-title="Yeni Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/ozdSWrO30FqE7CQVyxe1FopWqvs.jpg", Ayakçı
+https://ksm2.uk-traffic-076.com/hls2/01/00027/,l3c1qsqhzqpt_n,.urlset/master.m3u8?t=BwUdnFEW0A0C7rUQgJEPxaWUZz8tFhwUOBVk4OIT8Jc&s=1765403828&e=43200&f=139877&srv=x2&i=0.0&sp=5000&fr=l3c1qsqhzqpt&p1=ksm2&p2=ksm2
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/6kLHb8RIxJrKaawzp4Sm0cy4jaY.jpg", Karma 2025
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://m6ks.uk-traffic-076.com/hls2/02/00027/,uwcq7itcd0sa_n,.urlset/master.m3u8?t=onWo0RoT0exARIeIrYsiinBjn2wZ2UX4WgdAmS_fMmw&s=1765403530&e=43200&f=138035&srv=x2&i=0.0&sp=5000&fr=uwcq7itcd0sa&p1=m6ks&p2=m6ks
-#EXTINF:-1 group-title="Yeni Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/lGaVDZ6kLPqxypkio1fREN3z3Li.jpg", Metruk Adam
+https://m2sa.uk-traffic-076.com/hls2/02/00028/,zfnvtjhg228q_n,.urlset/master.m3u8?t=7JB-LC1HbiBBL_YlRoqeJTCkAozljhGtINRphsV4u4s&s=1765403828&e=43200&f=141683&srv=x2&i=0.0&sp=5000&fr=zfnvtjhg228q&p1=m2sa&p2=m2sa
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/kppp3NeLGerYE5GFLRitUwlzChh.jpg", FER
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://zm2n.uk-traffic-076.com/hls2/01/00027/,uedn6tidojny_n,.urlset/master.m3u8?t=tuU2O1dYbcBI76t6PWeWrpFgKfMgcKr26M3m6QxAXB4&s=1765403530&e=43200&f=137973&srv=x2&i=0.0&sp=5000&fr=uedn6tidojny&p1=zm2n&p2=zm2n
-#EXTINF:-1 group-title="Yeni Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/hh3VrdirGNPnoHquOn2EAX9KB9k.jpg", Dayı: Bir Adamın Hikâyesi 2
+https://ksm2.uk-traffic-076.com/hls2/02/00028/,yec36jc08ny4_n,.urlset/master.m3u8?t=Zy7NgS5wsPOehSt0iFKNT9es0S9Qq41GQRWGrwHOlWQ&s=1765403828&e=43200&f=141675&srv=x2&i=0.0&sp=5000&fr=yec36jc08ny4&p1=ksm2&p2=ksm2
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500//33JCvzBPl8N2XrWwc4fqOMRBTfP.jpg", Konuşanlar
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://zm2n.uk-traffic-076.com/hls2/01/00027/,reuce1ft5768_n,.urlset/master.m3u8?t=FBO-pWvrk56ZZPOEaGLjfrWX293O7GZGUCLj6LBcYlU&s=1765403530&e=43200&f=137974&srv=x1&i=0.0&sp=5000&fr=reuce1ft5768&p1=zm2n&p2=zm2n
-#EXTINF:-1 group-title="Yeni Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/hHPovtU4b96LHcoeEwRkGHI5btw.jpg", Black Bag
+https://ak1m.uk-traffic-076.com/hls2/01/00028/,vwpd247onin9_n,.urlset/master.m3u8?t=5WTuz26vM0pS0vrbFuCLordN_AwniUZG533WVour9lQ&s=1765403829&e=43200&f=141673&srv=x2&i=0.0&sp=5000&fr=vwpd247onin9&p1=ak1m&p2=ak1m
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500//33JCvzBPl8N2XrWwc4fqOMRBTfP.jpg", Konuşanlar
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://ak1m.uk-traffic-076.com/hls2/01/00027/,crog24o6i69t_n,.urlset/master.m3u8?t=wATeHP2Lv8EQvbuNE6kyHoNRDVaSeA57H3tRZwrl7_k&s=1765403530&e=43200&f=137971&srv=x1&i=0.0&sp=5000&fr=crog24o6i69t&p1=ak1m&p2=ak1m
-#EXTINF:-1 group-title="Yeni Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/rwiMs8Lr6FAjvXEiQzTJyxLqZee.jpg", Aşk Sadece Bir An
+https://a1q2.uk-traffic-076.com/hls2/02/00027/,v4f36djp49v8_n,.urlset/master.m3u8?t=p-e6K9SAVjA_uk5_Wls3dKM5BORO4tCdcOvzUBdmTgI&s=1765403829&e=43200&f=139878&srv=x2&i=0.0&sp=5000&fr=v4f36djp49v8&p1=a1q2&p2=a1q2
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/2pi53UfC61zRYDU7BOlNoEG3myo.jpg", Sekizinci Aile
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://p2km.uk-traffic-076.com/hls2/02/00027/,ql5jf66rsdat_n,.urlset/master.m3u8?t=QWua19YmRYy61iS_kJ_GMOuPGUFaZQ-YoFpImnSbL1E&s=1765403532&e=43200&f=137936&srv=x1&i=0.0&sp=5000&fr=ql5jf66rsdat&p1=p2km&p2=p2km
-#EXTINF:-1 group-title="Yeni Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/yFHHfHcUgGAxziP1C3lLt0q2T4s.jpg", A Minecraft Movie
+https://kde2.uk-traffic-076.com/hls2/02/00027/,1oi4rtwwyuve_n,.urlset/master.m3u8?t=ap2asLLeFgfr2AJTB0JmwLR858yN-eQMJPPnzsStmF0&s=1765403830&e=43200&f=139880&srv=x2&i=0.0&sp=5000&fr=1oi4rtwwyuve&p1=kde2&p2=kde2
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/2pi53UfC61zRYDU7BOlNoEG3myo.jpg", Sekizinci Aile
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://an52.uk-traffic-076.com/hls2/01/00027/,alhtif77cxzs_n,.urlset/master.m3u8?t=mIvjkcJCfL9wiCsXzK61Ei1QbDAS3gaNt0BULZriCKs&s=1765403532&e=43200&f=137866&srv=x1&i=0.0&sp=5000&fr=alhtif77cxzs&p1=an52&p2=an52
-#EXTINF:-1 group-title="Yeni Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/hBH50Mkcrc4m8x73CovLmY7vBx1.jpg", Thunderbolts*
+https://dn2p.uk-traffic-076.com/hls2/02/00027/,yggd89er3f15_n,.urlset/master.m3u8?t=kVbbCTAWFrTR6rhFBYf-3gOkVr5UIPpOXZwz5juTOIQ&s=1765403830&e=43200&f=139881&srv=x2&i=0.0&sp=5000&fr=yggd89er3f15&p1=dn2p&p2=dn2p
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/eo3tUCR0H1qabSoJwVTHPy1813d.jpg", Antrenör
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://an52.uk-traffic-076.com/hls2/02/00027/,ddyvoiqmitk6_n,.urlset/master.m3u8?t=0d0o4nuCjJUlS4zb1ZpVY2n6bZxTkDg7nUVGW6pjlPw&s=1765403532&e=43200&f=137900&srv=x1&i=0.0&sp=5000&fr=ddyvoiqmitk6&p1=an52&p2=an52
-#EXTINF:-1 group-title="Yeni Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/smW2dDoB1J0LjP6bIYJZBJipqtZ.jpg", Mucize Aynalar
+https://dn2p.uk-traffic-076.com/hls2/02/00027/,5t7uxdvr7r5z_n,.urlset/master.m3u8?t=STsLFACGEOp3KzdA7eVcakcdKBGtNX38gCZlkjqLA7A&s=1765403830&e=43200&f=138145&srv=x2&i=0.0&sp=5000&fr=5t7uxdvr7r5z&p1=dn2p&p2=dn2p
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/eo3tUCR0H1qabSoJwVTHPy1813d.jpg", Antrenör
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://o23m.uk-traffic-076.com/hls2/02/00027/,u5jxqgqxv6jn_n,.urlset/master.m3u8?t=F9tNeL4JMiMHJPIlwLKxeK1_qNfPdl7KKwsz-fUHRfI&s=1765403533&e=43200&f=137867&srv=x2&i=0.0&sp=5000&fr=u5jxqgqxv6jn&p1=o23m&p2=o23m
-#EXTINF:-1 group-title="Yeni Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/dAvnOVYUNm5GmD0JJgozsrrTxN6.jpg", İllegal Hayatlar: Meclis
+https://qp21.uk-traffic-076.com/hls2/02/00027/,i5z598fol70d_n,.urlset/master.m3u8?t=xLM_Rk78diiBlP8ylGgWlc9_GGkCdKUE-0fdKznrKr0&s=1765403831&e=43200&f=138146&srv=x2&i=0.0&sp=5000&fr=i5z598fol70d&p1=qp21&p2=qp21
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500//33JCvzBPl8N2XrWwc4fqOMRBTfP.jpg", Konuşanlar
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://ak21.uk-traffic-076.com/hls2/02/00027/,1l316jnern2h_n,.urlset/master.m3u8?t=tjybNk91o0RBbkEOhrjwswoiSdjFfk6jrBrx85gDbZY&s=1765403533&e=43200&f=137940&srv=x1&i=0.0&sp=5000&fr=1l316jnern2h&p1=ak21&p2=ak21
-#EXTINF:-1 group-title="Yeni Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/pzIddUEMWhWzfvLI3TwxUG2wGoi.jpg", Captain America: Brave New World
+https://jfn2.uk-traffic-076.com/hls2/01/00027/ueuwvog2oo3p_n/master.m3u8?t=xucZNS7BXejdj_1a0W1hnF2TRRKItLn9usVoEzS50Bw&s=1765403831&e=43200&f=138130&srv=x1&i=0.0&sp=5000&p1=jfn2&p2=jfn2
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/eo3tUCR0H1qabSoJwVTHPy1813d.jpg", Antrenör
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://an52.uk-traffic-076.com/hls2/02/00026/,ox6g44krske1_n,.urlset/master.m3u8?t=KF2xsbZoVWpFLVX4F8hVOAMF0tHqE8mloxMTREYh5ek&s=1765403534&e=43200&f=133214&srv=x1&i=0.0&sp=5000&fr=ox6g44krske1&p1=an52&p2=an52
-#EXTINF:-1 group-title="Yeni Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/zOwERSSssBydVjLT0lcrM1SEFnL.jpg", Tezgah
+https://xn2m.uk-traffic-076.com/hls2/02/00027/,6s1sjc99qbqz_n,.urlset/master.m3u8?t=Q09zHUCWta8GEZd1u7wQv3em421KbD1UIzD1AhFFdkk&s=1765403831&e=43200&f=138144&srv=x2&i=0.0&sp=5000&fr=6s1sjc99qbqz&p1=xn2m&p2=xn2m
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/eo3tUCR0H1qabSoJwVTHPy1813d.jpg", Antrenör
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://y3k9.uk-traffic-076.com/hls2/01/00027/,oglu2pg9pihv_n,.urlset/master.m3u8?t=cFz8Q3qd6WoQYpiaOk4niK9EuaxR4OW-P7y4Msia-R4&s=1765403534&e=43200&f=137858&srv=x2&i=0.0&sp=5000&fr=oglu2pg9pihv&p1=y3k9&p2=y3k9
-#EXTINF:-1 group-title="Yeni Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/wu80BCy95v9Z5yfb9LHZz9eaibi.jpg", Tur Rehberi
+https://ksm2.uk-traffic-076.com/hls2/02/00027/,u8t3fes0jush_n,.urlset/master.m3u8?t=pzxLtI-VpOXbDRZ0nCsEmzhOUymxzUvKTQRSxBsbZJs&s=1765403831&e=43200&f=138147&srv=x2&i=0.0&sp=5000&fr=u8t3fes0jush&p1=ksm2&p2=ksm2
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/eo3tUCR0H1qabSoJwVTHPy1813d.jpg", Antrenör
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://zm2n.uk-traffic-076.com/hls2/02/00027/,01m37182n65m_n,.urlset/master.m3u8?t=O04ZDgDlwNlbcy4OaxqpTe0S27AAUUdm_TMMA2HHbWA&s=1765403535&e=43200&f=137857&srv=x1&i=0.0&sp=5000&fr=01m37182n65m&p1=zm2n&p2=zm2n
-#EXTINF:-1 group-title="Yeni Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/kDH6QUdvcZxlNK61oWhoq3AuKP0.jpg", Kutsal Damacana 5: Zombi!
+https://ksm2.uk-traffic-076.com/hls2/02/00027/,btvptifkigwa_n,.urlset/master.m3u8?t=85vydtf4KFcVC3ehHfYlWQTRfv-guLOX_fc1i2Gi4Z4&s=1765403831&e=43200&f=138143&srv=x2&i=0.0&sp=5000&fr=btvptifkigwa&p1=ksm2&p2=ksm2
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/2pi53UfC61zRYDU7BOlNoEG3myo.jpg", Sekizinci Aile
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://ksm2.uk-traffic-076.com/hls2/02/00027/,5ev9t941lktd_n,.urlset/master.m3u8?t=FiqYaGqXwqSdijzXEvwmW8m40eiYaxoA6Zrqj_aDNOI&s=1765403535&e=43200&f=137865&srv=x1&i=0.0&sp=5000&fr=5ev9t941lktd&p1=ksm2&p2=ksm2
-#EXTINF:-1 group-title="Yeni Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/edKpE9B5qN3e559OuMCLZdW1iBZ.jpg", Mickey 17
+https://sn12.uk-traffic-076.com/hls2/02/00027/,qj9q7gcyddoc_n,.urlset/master.m3u8?t=fcaCqGQaVIwMhVadDg9gIC1fJf-1zdNKnqIPT0-D0Rw&s=1765403831&e=43200&f=139882&srv=x2&i=0.0&sp=5000&fr=qj9q7gcyddoc&p1=sn12&p2=sn12
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/5MTzX3ajVc7QCu8Dp2g3z9SiU3j.jpg", Kaosun Anatomisi
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://p2km.uk-traffic-076.com/hls2/01/00027/,0j62ag6pxe32_n,.urlset/master.m3u8?t=ZbeVPYciRfOUgo_Zgz15pUWRqDWrTJbp6NRAfmLKbgg&s=1765403535&e=43200&f=137558&srv=x1&i=0.0&sp=5000&fr=0j62ag6pxe32&p1=p2km&p2=p2km
-#EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/4GRz51gD041srd8c0ws90eAdn3z.jpg", Days of Fire, Love and Anarchy
+https://y3k9.uk-traffic-076.com/hls2/01/00027/,7t9pv1q9r62h_n,.urlset/master.m3u8?t=DEv3hf9cflCmXm_J3jb6p2j7y7WXvDtJlhxp7hChX1w&s=1765403832&e=43200&f=138132&srv=x2&i=0.0&sp=5000&fr=7t9pv1q9r62h&p1=y3k9&p2=y3k9
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/eo3tUCR0H1qabSoJwVTHPy1813d.jpg", Antrenör
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://sn12.uk-traffic-076.com/hls2/01/00023/6pwd8q64qw4m_n/master.m3u8?t=u0Lh-E9Oa2Rev9uTHRzndnLagc-WasYa3EAapBrIOCs&s=1765403594&e=43200&f=115504&srv=x2&i=0.0&sp=5000&p1=sn12&p2=sn12
-#EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/iyTD2QnySNMPUPE3IedZQipSWfz.jpg", Wild Strawberries
+https://h2m1.uk-traffic-076.com/hls2/01/00027/17t24l3900lx_n/master.m3u8?t=XhRPlpJp6QOh7pdFp4pJkSNW2O9gFhI35C1sqeOAg8M&s=1765403832&e=43200&f=138140&srv=x1&i=0.0&sp=5000&p1=h2m1&p2=h2m1
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/eo3tUCR0H1qabSoJwVTHPy1813d.jpg", Antrenör
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://pjs1.uk-traffic-076.com/hls2/01/00019/rcm4cf2yq818_h/master.m3u8?t=wukujLUcxOl-LBIDf6Z6f9IbU_-esqPbnhr808Prw9s&s=1765403595&e=43200&f=95181&srv=x2&i=0.0&sp=5000&p1=pjs1&p2=pjs1
+https://qp21.uk-traffic-076.com/hls2/01/00027/a7076qdmdnp2_n/master.m3u8?t=rhLMfHg-xbafdR2XQ9n_xf0ALaBUGXF_f8QaCmfI-ec&s=1765403832&e=43200&f=138139&srv=x1&i=0.0&sp=5000&p1=qp21&p2=qp21
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/kppp3NeLGerYE5GFLRitUwlzChh.jpg", FER
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://j2mx.uk-traffic-076.com/hls2/01/00027/8bwnoedibisk_n/master.m3u8?t=rQI0At_wdawfR3oh87mTRF0JL1XZgDm3JvvcYpXEiXI&s=1765403832&e=43200&f=138137&srv=x1&i=0.0&sp=5000&p1=j2mx&p2=j2mx
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/eo3tUCR0H1qabSoJwVTHPy1813d.jpg", Antrenör
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://kde2.uk-traffic-076.com/hls2/01/00027/t7run08en9hm_n/master.m3u8?t=sAN5UBVD4Zl60qFbKPzxGO32PTNPTpByT7yK_tZQxW4&s=1765403832&e=43200&f=138138&srv=x1&i=0.0&sp=5000&p1=kde2&p2=kde2
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/eo3tUCR0H1qabSoJwVTHPy1813d.jpg", Antrenör
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://o23m.uk-traffic-076.com/hls2/01/00027/2fcjt9joopx9_n/master.m3u8?t=qitw6Y_s6BW_-SxI_ju_UG8uGdrwS9E8DaNZYMVc9Gc&s=1765403833&e=43200&f=138141&srv=x1&i=0.0&sp=5000&p1=o23m&p2=o23m
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/6kLHb8RIxJrKaawzp4Sm0cy4jaY.jpg", Karma 2025
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://ksm2.uk-traffic-076.com/hls2/01/00027/,piee4h81wmkq_n,.urlset/master.m3u8?t=8Ynw8y7fO6jAIm64vh4gqUKfkUkQZ7lz0ajqHm6DvkQ&s=1765403833&e=43200&f=138134&srv=x2&i=0.0&sp=5000&fr=piee4h81wmkq&p1=ksm2&p2=ksm2
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/xYsqggJTpFgx9MTGSwMstOx60V2.jpg", Final Gate
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://o23m.uk-traffic-076.com/hls2/02/00027/,ejggavww7ere_n,.urlset/master.m3u8?t=BeoYFbYqC2X2qdaaHrorWXaYcLFutM0o0XARXPH-FQ4&s=1765403833&e=43200&f=138131&srv=x2&i=0.0&sp=5000&fr=ejggavww7ere&p1=o23m&p2=o23m
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/eo3tUCR0H1qabSoJwVTHPy1813d.jpg", Antrenör
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://p2km.uk-traffic-076.com/hls2/01/00027/mymoxjjh4u3q_n/master.m3u8?t=DOfFJbnRdvmwe6YMBhbPRKsVhUE4Z2GSY2s1frOmnPQ&s=1765403833&e=43200&f=138142&srv=x1&i=0.0&sp=5000&p1=p2km&p2=p2km
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500//33JCvzBPl8N2XrWwc4fqOMRBTfP.jpg", Konuşanlar
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://ka5m.uk-traffic-076.com/hls2/02/00027/,bi28vztrw7pu_n,.urlset/master.m3u8?t=DvmCZkxU8g1XDzYRU0n3rd2PJBoy7lMVP0KD0TxPlH4&s=1765403834&e=43200&f=138128&srv=x1&i=0.0&sp=5000&fr=bi28vztrw7pu&p1=ka5m&p2=ka5m
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/5MTzX3ajVc7QCu8Dp2g3z9SiU3j.jpg", Kaosun Anatomisi
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://ksm2.uk-traffic-076.com/hls2/01/00027/,1cy59a46sb4n_n,.urlset/master.m3u8?t=8j5OpLce08OrFcj6_ff00pwqDfb8A1tGCh4ZLZ3PPYs&s=1765403834&e=43200&f=138133&srv=x2&i=0.0&sp=5000&fr=1cy59a46sb4n&p1=ksm2&p2=ksm2
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/6kLHb8RIxJrKaawzp4Sm0cy4jaY.jpg", Karma 2025
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://jfn2.uk-traffic-076.com/hls2/02/00027/,jssni0q08psx_n,.urlset/master.m3u8?t=I73YZTfW7RDASZEDoo6BUl_n-GJ-2OUyRd5FoKz020o&s=1765403834&e=43200&f=138126&srv=x2&i=0.0&sp=5000&fr=jssni0q08psx&p1=jfn2&p2=jfn2
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/Ascg3JHKijCTqHraSkWEdGF1ixR.jpg", Karşılaşmalar
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://zm1w.uk-traffic-076.com/hls2/02/00027/,a04sqbklaa2l_n,.urlset/master.m3u8?t=RAg7nJx7bl8ggJOZbRlGBlsUWWqf879VhGxkl3TFc8w&s=1765403834&e=43200&f=138127&srv=x2&i=0.0&sp=5000&fr=a04sqbklaa2l&p1=zm1w&p2=zm1w
+#EXTINF:-1 group-title="Son Bölümler" tvg-logo="https://www.themoviedb.org/t/p/w500/kppp3NeLGerYE5GFLRitUwlzChh.jpg", FER
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://ka5m.uk-traffic-076.com/hls2/01/00027/gf6f8w5jafj5_n/master.m3u8?t=t8oF_sgIz7sg0_JEdrQXeO3Yn2_SQ4nmzBA8DWy3vTI&s=1765403834&e=43200&f=138135&srv=x1&i=0.0&sp=5000&p1=ka5m&p2=ka5m
+#EXTINF:-1 group-title="Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/9Mg9q8hsv7aaUspAW2taRHXNkmC.jpg", Dehşet Bey
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://ka5m.uk-traffic-076.com/hls2/01/00027/,ljj92hpqfd68_n,.urlset/master.m3u8?t=T_hshHilrEmxG7PhK_s3gH1-jQQErCOl7GTQlgZS1Xo&s=1765403839&e=43200&f=138088&srv=x1&i=0.0&sp=5000&fr=ljj92hpqfd68&p1=ka5m&p2=ka5m
+#EXTINF:-1 group-title="Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/jbFEESMVbpJU8IjZBjiWGJdEsxR.jpg", Eden
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://kde2.uk-traffic-076.com/hls2/01/00027/,2e5oi7qf8sra_n,.urlset/master.m3u8?t=PyzgjDI-uFOnJ69nYS6F-EMMZhTB7O_Uz1JmxLNgowo&s=1765403839&e=43200&f=138101&srv=x2&i=0.0&sp=5000&fr=2e5oi7qf8sra&p1=kde2&p2=kde2
+#EXTINF:-1 group-title="Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/ozdSWrO30FqE7CQVyxe1FopWqvs.jpg", Ayakçı
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://m6ks.uk-traffic-076.com/hls2/02/00027/,uwcq7itcd0sa_n,.urlset/master.m3u8?t=9nRPSl4P0k0atK9ucwt9_IMA2qfGVZ18dEftPBcmxPg&s=1765403839&e=43200&f=138035&srv=x2&i=0.0&sp=5000&fr=uwcq7itcd0sa&p1=m6ks&p2=m6ks
+#EXTINF:-1 group-title="Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/lo5mfglsGeMYmAkSRXs9DATNJxk.jpg", Freaky Tales
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://xn2m.uk-traffic-076.com/hls2/02/00027/,5rel0lk7yxbo_n,.urlset/master.m3u8?t=9rR5FjDvRg38XrEILpRdkDNCYZSaX2-67teRsxwiFqI&s=1765403840&e=43200&f=138038&srv=x1&i=0.0&sp=5000&fr=5rel0lk7yxbo&p1=xn2m&p2=xn2m
+#EXTINF:-1 group-title="Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/lGaVDZ6kLPqxypkio1fREN3z3Li.jpg", Metruk Adam
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://zm2n.uk-traffic-076.com/hls2/01/00027/,uedn6tidojny_n,.urlset/master.m3u8?t=ttNv8fNUHT2vjpq7Jv9syHqi5Xj9F-ljp52v2lDSBcE&s=1765403840&e=43200&f=137973&srv=x2&i=0.0&sp=5000&fr=uedn6tidojny&p1=zm2n&p2=zm2n
+#EXTINF:-1 group-title="Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/z53D72EAOxGRqdr7KXXWp9dJiDe.jpg", Mission: Impossible - The Final Reckoning
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://xn2m.uk-traffic-076.com/hls2/02/00027/,hzte74cdpgz9_n,.urlset/master.m3u8?t=naiQVCbbG2g0ZkkKJ9ITTHvOoGkABJZp-pie6TlsZLs&s=1765403840&e=43200&f=138036&srv=x1&i=0.0&sp=5000&fr=hzte74cdpgz9&p1=xn2m&p2=xn2m
+#EXTINF:-1 group-title="Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/hh3VrdirGNPnoHquOn2EAX9KB9k.jpg", Dayı: Bir Adamın Hikâyesi 2
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://zm2n.uk-traffic-076.com/hls2/01/00027/,reuce1ft5768_n,.urlset/master.m3u8?t=_PA36sXmLqpXWYot7CbnGozTJvMWxK5nX1jXAzC-go4&s=1765403840&e=43200&f=137974&srv=x1&i=0.0&sp=5000&fr=reuce1ft5768&p1=zm2n&p2=zm2n
+#EXTINF:-1 group-title="Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/hHPovtU4b96LHcoeEwRkGHI5btw.jpg", Black Bag
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://ak1m.uk-traffic-076.com/hls2/01/00027/,crog24o6i69t_n,.urlset/master.m3u8?t=PdskI0GdBmTDV29jpFRaHzKbkCgd_Dt95-E-r4eCEmw&s=1765403840&e=43200&f=137971&srv=x1&i=0.0&sp=5000&fr=crog24o6i69t&p1=ak1m&p2=ak1m
+#EXTINF:-1 group-title="Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/fqYqg3DffPyZ5mfma8TEIWdzMoo.jpg", Bölük Pörçük: Bir Tuncel Kurtiz Biyografisi
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://ak1m.uk-traffic-076.com/hls2/02/00027/,t0wi0o0zahss_n,.urlset/master.m3u8?t=yxKVvdLJNgHySKG0KpFCPlH0ZO9pixDzAQBgua9RN30&s=1765403840&e=43200&f=138125&srv=x1&i=0.0&sp=5000&fr=t0wi0o0zahss&p1=ak1m&p2=ak1m
+#EXTINF:-1 group-title="Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/rwiMs8Lr6FAjvXEiQzTJyxLqZee.jpg", Aşk Sadece Bir An
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://p2km.uk-traffic-076.com/hls2/02/00027/,ql5jf66rsdat_n,.urlset/master.m3u8?t=7o4t7kgbL3IhLkvyfp3vLQPab6Qb1tFtYct5CrDouaU&s=1765403840&e=43200&f=137936&srv=x1&i=0.0&sp=5000&fr=ql5jf66rsdat&p1=p2km&p2=p2km
+#EXTINF:-1 group-title="Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/dAvnOVYUNm5GmD0JJgozsrrTxN6.jpg", İllegal Hayatlar: Meclis
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://ak21.uk-traffic-076.com/hls2/02/00027/,1l316jnern2h_n,.urlset/master.m3u8?t=EXS9l_OMAP3TScVbAhBSN09dFmZPg_rsO1JUGZhBq20&s=1765403841&e=43200&f=137940&srv=x1&i=0.0&sp=5000&fr=1l316jnern2h&p1=ak21&p2=ak21
+#EXTINF:-1 group-title="Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/hBH50Mkcrc4m8x73CovLmY7vBx1.jpg", Thunderbolts*
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://an52.uk-traffic-076.com/hls2/02/00027/,ddyvoiqmitk6_n,.urlset/master.m3u8?t=F7BfVS11bZxrA6k2lKxVzeCSxNnZpv6Q4B1nlGdPhTM&s=1765403841&e=43200&f=137900&srv=x1&i=0.0&sp=5000&fr=ddyvoiqmitk6&p1=an52&p2=an52
+#EXTINF:-1 group-title="Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/pzIddUEMWhWzfvLI3TwxUG2wGoi.jpg", Captain America: Brave New World
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://an52.uk-traffic-076.com/hls2/02/00026/,ox6g44krske1_n,.urlset/master.m3u8?t=r-X8AqOoU-mH6i-LwJXNArKdlweBrND9efNuiIZfHkE&s=1765403842&e=43200&f=133214&srv=x1&i=0.0&sp=5000&fr=ox6g44krske1&p1=an52&p2=an52
+#EXTINF:-1 group-title="Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/smW2dDoB1J0LjP6bIYJZBJipqtZ.jpg", Mucize Aynalar
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://o23m.uk-traffic-076.com/hls2/02/00027/,u5jxqgqxv6jn_n,.urlset/master.m3u8?t=UM3lTwJ8Wc7Ol1h2wijgcFv0RQP0jjuEi3iwPMRbcQw&s=1765403842&e=43200&f=137867&srv=x2&i=0.0&sp=5000&fr=u5jxqgqxv6jn&p1=o23m&p2=o23m
+#EXTINF:-1 group-title="Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/yFHHfHcUgGAxziP1C3lLt0q2T4s.jpg", A Minecraft Movie
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://an52.uk-traffic-076.com/hls2/01/00027/,alhtif77cxzs_n,.urlset/master.m3u8?t=Xtf1eDqRp-tLhCtC0SxEYFk_PM0XleJqYgpmvJNodWM&s=1765403842&e=43200&f=137866&srv=x1&i=0.0&sp=5000&fr=alhtif77cxzs&p1=an52&p2=an52
+#EXTINF:-1 group-title="Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/edKpE9B5qN3e559OuMCLZdW1iBZ.jpg", Mickey 17
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://p2km.uk-traffic-076.com/hls2/01/00027/,0j62ag6pxe32_n,.urlset/master.m3u8?t=Iog3cTWHG1gbrjY7sG-dx4GRwpeq9y4RVhtdEdyFjQo&s=1765403842&e=43200&f=137558&srv=x1&i=0.0&sp=5000&fr=0j62ag6pxe32&p1=p2km&p2=p2km
+#EXTINF:-1 group-title="Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/kDH6QUdvcZxlNK61oWhoq3AuKP0.jpg", Kutsal Damacana 5: Zombi!
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://ksm2.uk-traffic-076.com/hls2/02/00027/,5ev9t941lktd_n,.urlset/master.m3u8?t=4LKUWykPGfW2XvJcf9tPYli66EM-xUFqDqR8yYIsB6Q&s=1765403842&e=43200&f=137865&srv=x1&i=0.0&sp=5000&fr=5ev9t941lktd&p1=ksm2&p2=ksm2
+#EXTINF:-1 group-title="Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/wu80BCy95v9Z5yfb9LHZz9eaibi.jpg", Tur Rehberi
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://zm2n.uk-traffic-076.com/hls2/02/00027/,01m37182n65m_n,.urlset/master.m3u8?t=XsDweuh4Db-aIFhyM0nbhwpIutNFI7qvFe6idfIe4Jg&s=1765403842&e=43200&f=137857&srv=x1&i=0.0&sp=5000&fr=01m37182n65m&p1=zm2n&p2=zm2n
+#EXTINF:-1 group-title="Filmler" tvg-logo="https://www.themoviedb.org/t/p/w500/zOwERSSssBydVjLT0lcrM1SEFnL.jpg", Tezgah
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://y3k9.uk-traffic-076.com/hls2/01/00027/,oglu2pg9pihv_n,.urlset/master.m3u8?t=vrWA_AtL-vtDe_cJxASjBz9emUw5CoDw-JQ8rjP0SZs&s=1765403842&e=43200&f=137858&srv=x2&i=0.0&sp=5000&fr=oglu2pg9pihv&p1=y3k9&p2=y3k9
 #EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500//gGhjHiy46IFmj5wF3p1LJT2jIMK.jpg", Sanki Her Şey Biraz Felaket
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://ak21.uk-traffic-076.com/hls2/01/00021/,0dfsjltlcq5e_n,.urlset/master.m3u8?t=GSGlCTzXP8M17l1_eu6JcuSjJW7XfrJhQdPyH-BofhY&s=1765403595&e=43200&f=108189&srv=x2&i=0.0&sp=5000&fr=0dfsjltlcq5e&p1=ak21&p2=ak21
-#EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/5ZsXXDBFxZvDhTNNlTHVKCtZ48k.jpg", Love, Deutschmarks and Death
-#EXTVLCOPT:http-referrer=https://dizipal1217.com/
-#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://m2sa.uk-traffic-076.com/hls2/02/00024/,y46wwc2nimt8_n,.urlset/master.m3u8?t=cY5AUpd3OY_fEhV9GEIJT59vMx0RfLLvM2VM02DbTQA&s=1765403595&e=43200&f=120406&srv=x1&i=0.0&sp=5000&fr=y46wwc2nimt8&p1=m2sa&p2=m2sa
-#EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/k19H2VpHqi0AbbHnHEdPJCv2AfH.jpg", White Ant
-#EXTVLCOPT:http-referrer=https://dizipal1217.com/
-#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://qp21.uk-traffic-076.com/hls2/01/00019/psllqw6pw8o2_h/master.m3u8?t=nO0g7-kEgYR-wz0st4IHH0L5GCjMAAqd4va-O4xiiW4&s=1765403595&e=43200&f=95184&srv=x2&i=0.0&sp=5000&p1=qp21&p2=qp21
-#EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/wDxrEssdjFWYwIZLbr06RQNcg1q.jpg", Winter Light
-#EXTVLCOPT:http-referrer=https://dizipal1217.com/
-#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://kde2.uk-traffic-076.com/hls2/01/00019/6detdq8ey85h_h/master.m3u8?t=pIkhLw0qgZWLunIuhDfX2ZBjWTseV-pwTF2wc9lOBYA&s=1765403596&e=43200&f=95193&srv=x2&i=0.0&sp=5000&p1=kde2&p2=kde2
-#EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/lvVHTqEtz4bHOl8rf10MbN9CkDf.jpg", Zoran, My Nephew the Idiot
-#EXTVLCOPT:http-referrer=https://dizipal1217.com/
-#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://j2mx.uk-traffic-076.com/hls2/01/00019/2j8ss2uwg73z_h/master.m3u8?t=EWl61qtGEz-2OdZ_L9p-X--PW9NIaWAYpXBVmnrOT6I&s=1765403596&e=43200&f=95179&srv=x2&i=0.0&sp=5000&p1=j2mx&p2=j2mx
-#EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/58gW2Uty2cAsgBgwC58vT2Z9SVt.jpg", Where to Invade Next
-#EXTVLCOPT:http-referrer=https://dizipal1217.com/
-#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://z01k.uk-traffic-076.com/hls2/01/00019/14462amm0dmr_h/master.m3u8?t=MZeles6dnIM2asDnzRBSr6ebwJeohLGX4uIT4xLKel8&s=1765403596&e=43200&f=95191&srv=x2&i=0.0&sp=5000&p1=z01k&p2=z01k
+https://ak21.uk-traffic-076.com/hls2/01/00021/,0dfsjltlcq5e_n,.urlset/master.m3u8?t=DtG9dUTJ0eYksgRDGo_lXO4fxG7Vrx0k9VkU4Dh_t34&s=1765403888&e=43200&f=108189&srv=x2&i=0.0&sp=5000&fr=0dfsjltlcq5e&p1=ak21&p2=ak21
 #EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/dQlQWIejF1NKbRDYzFDqGAb6wN5.jpg", What Do We See When We Look at the Sky?
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://9k2m.uk-traffic-076.com/hls2/01/00019/6fg33uli3bp3_h/master.m3u8?t=8qBV6frn-DEZkBZ8Ltxkq74kE4mXTKOWAJLEN1EPlJM&s=1765403597&e=43200&f=95166&srv=x2&i=0.0&sp=5000&p1=9k2m&p2=9k2m
+https://9k2m.uk-traffic-076.com/hls2/01/00019/6fg33uli3bp3_h/master.m3u8?t=5HhIrKcljGjRnFOzSim9eDizlhivRvgBflixKdImLwU&s=1765403888&e=43200&f=95166&srv=x2&i=0.0&sp=5000&p1=9k2m&p2=9k2m
+#EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/5ZsXXDBFxZvDhTNNlTHVKCtZ48k.jpg", Love, Deutschmarks and Death
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://m2sa.uk-traffic-076.com/hls2/02/00024/,y46wwc2nimt8_n,.urlset/master.m3u8?t=hmvjxmlyGKICI4sNoNy2F34zhFJMN85_UCkGqN25EqE&s=1765403888&e=43200&f=120406&srv=x1&i=0.0&sp=5000&fr=y46wwc2nimt8&p1=m2sa&p2=m2sa
+#EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/iyTD2QnySNMPUPE3IedZQipSWfz.jpg", Wild Strawberries
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://pjs1.uk-traffic-076.com/hls2/01/00019/rcm4cf2yq818_h/master.m3u8?t=qU_oNsC4G05NfFnuNQEyoV9b2qdwexCpOKgm6rkDv34&s=1765403888&e=43200&f=95181&srv=x2&i=0.0&sp=5000&p1=pjs1&p2=pjs1
 #EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/rQz3uz5Xe9uLO6GvGfSabB9kdj6.jpg", Whatever Happened to My Revolution
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://ksm2.uk-traffic-076.com/hls2/01/00019/khttc9mypsy3_h/master.m3u8?t=Z-Vnj-r0YfqhEJQdovsJyZp6yh2lOl6SFK97GE5xWPU&s=1765403597&e=43200&f=95190&srv=x2&i=0.0&sp=5000&p1=ksm2&p2=ksm2
+https://ksm2.uk-traffic-076.com/hls2/01/00019/khttc9mypsy3_h/master.m3u8?t=zTSya8O3hofcy_6IJ0qFXkaF--PIjlKCPe5_aoZfVQg&s=1765403888&e=43200&f=95190&srv=x2&i=0.0&sp=5000&p1=ksm2&p2=ksm2
+#EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/wDxrEssdjFWYwIZLbr06RQNcg1q.jpg", Winter Light
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://kde2.uk-traffic-076.com/hls2/01/00019/6detdq8ey85h_h/master.m3u8?t=2oAp4wCdwUBgIs3HpZwz7mI6KScqLLpyNrmZqjoKL1g&s=1765403888&e=43200&f=95193&srv=x2&i=0.0&sp=5000&p1=kde2&p2=kde2
+#EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/k19H2VpHqi0AbbHnHEdPJCv2AfH.jpg", White Ant
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://qp21.uk-traffic-076.com/hls2/01/00019/psllqw6pw8o2_h/master.m3u8?t=VhTy9udMPMVo-Px1pt6PuqfarzJXxU3SIYblYTxr6I0&s=1765403888&e=43200&f=95184&srv=x2&i=0.0&sp=5000&p1=qp21&p2=qp21
+#EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/58gW2Uty2cAsgBgwC58vT2Z9SVt.jpg", Where to Invade Next
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://z01k.uk-traffic-076.com/hls2/01/00019/14462amm0dmr_h/master.m3u8?t=MwBVSFYICYkUVW92STnTeTR5EitDlKmAHHDKqU2esl0&s=1765403888&e=43200&f=95191&srv=x2&i=0.0&sp=5000&p1=z01k&p2=z01k
+#EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/lvVHTqEtz4bHOl8rf10MbN9CkDf.jpg", Zoran, My Nephew the Idiot
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://j2mx.uk-traffic-076.com/hls2/01/00019/2j8ss2uwg73z_h/master.m3u8?t=D4nPqfhfNbmlio4lUj_4vpCpNHvInJM0lnFiCaqtcRc&s=1765403888&e=43200&f=95179&srv=x2&i=0.0&sp=5000&p1=j2mx&p2=j2mx
 #EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/bGR3Wg6eX8S4bDm0NO2zbms7Hpy.jpg", Walesa: Man of Hope
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://a1q2.uk-traffic-076.com/hls2/01/00019/1x4ejktqhcu0_h/master.m3u8?t=D0KrEPvjGUbee3JyRutrBHy-9gj18Bi-U59lra-cJjo&s=1765403598&e=43200&f=95168&srv=x2&i=0.0&sp=5000&p1=a1q2&p2=a1q2
-#EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/9VF39qfTWrV3bKhobPJf80XSneC.jpg", Vendetta Song
-#EXTVLCOPT:http-referrer=https://dizipal1217.com/
-#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://xn2m.uk-traffic-076.com/hls2/01/00019/m4y17m03ndiv_h/master.m3u8?t=afGzoyRSFjWnmUfzh3AAlvkYdl8nQP7yctbnVVWRen0&s=1765403598&e=43200&f=95192&srv=x2&i=0.0&sp=5000&p1=xn2m&p2=xn2m
-#EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/5V7i63rodY56cGWmPATxumzj4xv.jpg", The Secret Life of Words
-#EXTVLCOPT:http-referrer=https://dizipal1217.com/
-#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://lam1.uk-traffic-076.com/hls2/01/00019/4yrhsz8cwsf2_h/master.m3u8?t=H9YW6EbYzpdMuOf4SJJUXV5puvEqsMlXXJXWwroxyMQ&s=1765403598&e=43200&f=95165&srv=x2&i=0.0&sp=5000&p1=lam1&p2=lam1
+https://a1q2.uk-traffic-076.com/hls2/01/00019/1x4ejktqhcu0_h/master.m3u8?t=BimQWKHeK31QdA0arg0L4YJX-JafAhWbkD6a7Thoi34&s=1765403889&e=43200&f=95168&srv=x2&i=0.0&sp=5000&p1=a1q2&p2=a1q2
 #EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/gWuhAHj0vK4UNZvJZevxobkmGDq.jpg", Violet Perfume
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://jfn2.uk-traffic-076.com/hls2/01/00019/blkqgee43c0l_h/master.m3u8?t=RYQNvKlJkEi58LAskiok2dAJwIVHwFP1YEBAdGj-0AM&s=1765403598&e=43200&f=95176&srv=x2&i=0.0&sp=5000&p1=jfn2&p2=jfn2
+https://jfn2.uk-traffic-076.com/hls2/01/00019/blkqgee43c0l_h/master.m3u8?t=Qx9QMiVrPpTIOg4GUxDNKUUzfy97ADZ8NlBNan_ViZ0&s=1765403890&e=43200&f=95176&srv=x2&i=0.0&sp=5000&p1=jfn2&p2=jfn2
+#EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/9VF39qfTWrV3bKhobPJf80XSneC.jpg", Vendetta Song
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://xn2m.uk-traffic-076.com/hls2/01/00019/m4y17m03ndiv_h/master.m3u8?t=NkbHHhfDGb79MC6dfRRI6YF9E8RraDUHdXnMDcMsr1w&s=1765403890&e=43200&f=95192&srv=x2&i=0.0&sp=5000&p1=xn2m&p2=xn2m
+#EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/5V7i63rodY56cGWmPATxumzj4xv.jpg", The Secret Life of Words
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://lam1.uk-traffic-076.com/hls2/01/00019/4yrhsz8cwsf2_h/master.m3u8?t=C1nk3pG5ZgiKARFds2KVGiTbn6ziPUnbL7p5vxpm01M&s=1765403890&e=43200&f=95165&srv=x2&i=0.0&sp=5000&p1=lam1&p2=lam1
 #EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/mElfoXRNjoaniMWCwq5jJ11UKZM.jpg", We Bear Good News For Our Beloved Country, Our Cinema Is Celebrating Its 100th Anniversary!
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://9k2m.uk-traffic-076.com/hls2/01/00019/bhdx94yd360c_h/master.m3u8?t=BHaRL-y7KoigV2ILbJw8C3vmHTvEiSStSSHBeacCH1A&s=1765403599&e=43200&f=95170&srv=x2&i=0.0&sp=5000&p1=9k2m&p2=9k2m
-#EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/fH9woIxzqVtyv6S711vSVlS12eA.jpg", Seven Chances
-#EXTVLCOPT:http-referrer=https://dizipal1217.com/
-#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://ak21.uk-traffic-076.com/hls2/01/00019/g21rtn432li0_h/master.m3u8?t=LKqGGG5JX7t6fFnSLnWJEWBBqr0C0yqSiGHQDLAd_co&s=1765403600&e=43200&f=95172&srv=x2&i=0.0&sp=5000&p1=ak21&p2=ak21
+https://9k2m.uk-traffic-076.com/hls2/01/00019/bhdx94yd360c_h/master.m3u8?t=w7neix6BdjfvkBaSGQr-bUCPXp_ifA4cK9toYOvamug&s=1765403890&e=43200&f=95170&srv=x2&i=0.0&sp=5000&p1=9k2m&p2=9k2m
 #EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/8MJDh9WsMYuJzVV7ASsf4HP20A4.jpg", The Great Buster: A Celebration
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://ksm2.uk-traffic-076.com/hls2/01/00019/616c386lbpou_h/master.m3u8?t=QfbCr3oqrTtKtkTfC_Wtu-DjPxogMRVDk2LYWpLhlA8&s=1765403601&e=43200&f=95177&srv=x2&i=0.0&sp=5000&p1=ksm2&p2=ksm2
-#EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/gu9zd9rzYaQj2eU1IGeOqcpytoW.jpg", The Future
-#EXTVLCOPT:http-referrer=https://dizipal1217.com/
-#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://ak1m.uk-traffic-076.com/hls2/01/00019/f9c0znt8fc6t_h/master.m3u8?t=hjUaAWdFzZi1SPx9lQdcBOOzE0DKGh5tXfLsjcrQR4A&s=1765403601&e=43200&f=95178&srv=x2&i=0.0&sp=5000&p1=ak1m&p2=ak1m
-#EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/xDoghTI6uSD2GVpT8FxhtluvSZ8.jpg", Phantom Project
-#EXTVLCOPT:http-referrer=https://dizipal1217.com/
-#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://z01k.uk-traffic-076.com/hls2/01/00019/llxtrkd57r4t_h/master.m3u8?t=0Ep2FR2VuM24kG1nRkJsp9XoVCju0q1nJ_L3CpVBPrY&s=1765403601&e=43200&f=95169&srv=x2&i=0.0&sp=5000&p1=z01k&p2=z01k
+https://ksm2.uk-traffic-076.com/hls2/01/00019/616c386lbpou_h/master.m3u8?t=6zDFvhp7HxbDR4fZcLYRhf1T4lBoUSSiGi8kubPCiUg&s=1765403890&e=43200&f=95177&srv=x2&i=0.0&sp=5000&p1=ksm2&p2=ksm2
 #EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/nQpSyYxDCtBZ1v4Kc8GFEiEcfpe.jpg", Prince Avalanche
 #EXTVLCOPT:http-referrer=https://dizipal1217.com/
 #EXTHTTP:{"Referer": "https://dizipal1217.com/"}
-https://z01k.uk-traffic-076.com/hls2/01/00019/2ud07y7jwvcf_h/master.m3u8?t=P7xIciLuhI3ko30o4Uj7_Gikr8UvXyHBeZwzUbMwIxQ&s=1765403601&e=43200&f=95175&srv=x2&i=0.0&sp=5000&p1=z01k&p2=z01k
+https://z01k.uk-traffic-076.com/hls2/01/00019/2ud07y7jwvcf_h/master.m3u8?t=ZZKQj5mAEDSgUAhtPlo8QMVg11xYpAV-8L_g93En-C0&s=1765403891&e=43200&f=95175&srv=x2&i=0.0&sp=5000&p1=z01k&p2=z01k
+#EXTINF:-1 group-title="Mubi" tvg-logo="https://www.themoviedb.org/t/p/w500/gu9zd9rzYaQj2eU1IGeOqcpytoW.jpg", The Future
+#EXTVLCOPT:http-referrer=https://dizipal1217.com/
+#EXTHTTP:{"Referer": "https://dizipal1217.com/"}
+https://ak1m.uk-traffic-076.com/hls2/01/00019/f9c0znt8fc6t_h/master.m3u8?t=KXM6C2C_FrBS90RlcSw7o8FNF-A4qbWXSVPFc7Df4GQ&s=1765403891&e=43200&f=95178&srv=x2&i=0.0&sp=5000&p1=ak1m&p2=ak1m
