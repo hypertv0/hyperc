@@ -1,3 +1,2 @@
-seleniumbase
+requests
 beautifulsoup4
-pycryptodome
