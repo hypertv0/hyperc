@@ -1,14 +1,17 @@
-name: DiziPal Full Scraper
+name: DiziPal Full Auto
 
 on:
   schedule:
-    - cron: '0 3 * * *' # Gece 03:00'da çalışır
+    - cron: '0 3 * * *' # Her gece 03:00
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 360 # 6 Saat zaman aşımı
+    timeout-minutes: 360
 
     steps:
       - name: Repoyu Çek
@@ -19,16 +22,18 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Kütüphaneleri Yükle
-        run: pip install requests beautifulsoup4
+      - name: Gereksinimleri Yükle
+        run: |
+          pip install --upgrade pip
+          pip install requests beautifulsoup4 cloudscraper
 
       - name: Scraper Başlat
         run: python dizipal_scraper.py
 
-      - name: Kaydet ve Gönder
+      - name: Kaydet
         run: |
           git config --global user.name 'GitHub Action'
           git config --global user.email 'action@github.com'
           git add dizipal.m3u
-          git commit -m "Auto Update: $(date)" || echo "Değişiklik yok"
+          git commit -m "Otomatik Güncelleme $(date)" || echo "Değişiklik yok"
           git push
